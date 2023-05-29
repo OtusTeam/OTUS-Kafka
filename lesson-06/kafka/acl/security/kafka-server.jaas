@@ -1,0 +1,8 @@
+// Client config user to connect to Zookeeper
+Client {
+  org.apache.zookeeper.server.auth.DigestLoginModule required
+  username="kafka"
+  password="kafka-secret";
+};
+
+

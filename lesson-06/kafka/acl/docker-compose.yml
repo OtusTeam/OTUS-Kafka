@@ -1,0 +1,57 @@
+# Basic authorization with SASL (Plaintext to Kafka and DigestMD5 to Zookeeper)
+# см https://github.com/osodevops/kafka-audit-security-acls
+---
+version: '2'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.0.9 #confluentinc/cp-zookeeper:5.5.1
+    ports:
+      - '31000:31000'
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: "-Dzookeeper.authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider -Djava.security.auth.login.config=/opt/security/zookeeper-server.jaas"
+      KAFKA_JMX_HOSTNAME: "localhost"
+      KAFKA_JMX_PORT: 31000
+    volumes:
+      - ./security:/opt/security
+
+  kafka0:
+    image: confluentinc/cp-kafka:7.0.9 #confluentinc/cp-server:5.5.1
+    ports:
+      - '9091:9091'
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 0
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_INTER_BROKER_LISTENER_NAME: REPLICATION
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_LISTENERS: "EXTERNAL://0.0.0.0:9091,INTERNAL://0.0.0.0:9093,REPLICATION://0.0.0.0:9094"
+      KAFKA_ADVERTISED_LISTENERS: "EXTERNAL://localhost:9091,INTERNAL://kafka0:9093,REPLICATION://kafka0:9094"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "EXTERNAL:SASL_PLAINTEXT,INTERNAL:SASL_PLAINTEXT,REPLICATION:SASL_PLAINTEXT"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 100
+
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_INTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required user_admin='admin-secret' user_producer='producer-secret' user_consumer='consumer-secret';"
+
+      KAFKA_LISTENER_NAME_EXTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required user_admin='admin-secret' user_producer='producer-secret' user_consumer='consumer-secret';"
+
+      KAFKA_LISTENER_NAME_REPLICATION_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_REPLICATION_PLAIN_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required user_broker='broker-secret' username='broker' password='broker-secret';"
+
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+      KAFKA_SUPER_USERS: "User:broker;User:admin"
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "false"
+      KAFKA_ZOOKEEPER_SET_ACL: "true"
+      KAFKA_OPTS: "-Djava.security.auth.login.config=/opt/security/kafka-server.jaas"
+
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - ./security:/opt/security
+      - ./config/kafka/log4j.properties.template:/etc/confluent/docker/log4j.properties.template
+      - ./logs:/var/log/kafka/

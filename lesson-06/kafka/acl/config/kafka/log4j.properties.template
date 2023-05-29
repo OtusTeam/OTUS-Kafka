@@ -1,0 +1,36 @@
+kafka.root.logger.level=INFO
+
+log4j.rootLogger=${kafka.root.logger.level}, CONSOLE
+
+log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
+log4j.appender.CONSOLE.layout.ConversionPattern=%d{ISO8601} %p %m (%c) [%t]%n
+log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
+
+# Change the two lines below to adjust ZK client logging
+log4j.logger.org.I0Itec.zkclient.ZkClient=INFO
+log4j.logger.org.apache.zookeeper=INFO
+
+# Change the two lines below to adjust the general broker logging level (output to server.log and stdout)
+log4j.logger.kafka=INFO
+log4j.logger.org.apache.kafka=INFO
+
+# Kafka Loggers
+# Change to DEBUG or TRACE to enable request logging
+log4j.logger.kafka.request.logger=WARN
+log4j.logger.kafka.network.Processor=OFF
+log4j.logger.kafka.server.KafkaApis=OFF
+log4j.logger.kafka.network.RequestChannel$=WARN
+log4j.logger.kafka.controller=TRACE
+log4j.logger.kafka.log.LogCleaner=INFO
+
+# Authorizer log4j configuration
+log4j.appender.authorizerAppender=org.apache.log4j.RollingFileAppender
+log4j.appender.authorizerAppender.File=/var/log/kafka/kafka-authorizer.log
+log4j.appender.authorizerAppender.layout=org.apache.log4j.PatternLayout
+log4j.appender.authorizerAppender.layout.ConversionPattern=[%d] %m %n
+log4j.appender.authorizerAppender.Append=true
+log4j.appender.authorizerAppender.MaxBackupIndex=10
+log4j.appender.authorizerAppender.MaxFileSize=100MB
+# Access denials are logged at INFO level, change to DEBUG to also log allowed accesses
+log4j.logger.kafka.authorizer.logger=INFO, authorizerAppender
+log4j.additivity.kafka.authorizer.logger=false
