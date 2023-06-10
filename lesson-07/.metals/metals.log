@@ -1,0 +1,39 @@
+2023.06.10 20:51:43 INFO  Started: Metals version 0.11.12 in workspace '/Users/vadim/Projects/OtusTeam/OTUS-Kafka/lesson-07' for client Visual Studio Code 1.78.2.
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.license.VersionPrinter printVersionOnly
+INFO: Flyway Community Edition 9.16.3 by Redgate
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.license.VersionPrinter printVersion
+INFO: See release notes here: https://rd.gt/416ObMi
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.license.VersionPrinter printVersion
+INFO: 
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.database.base.BaseDatabaseType createDatabase
+INFO: Database: jdbc:h2:file:/Users/vadim/Projects/OtusTeam/OTUS-Kafka/lesson-07/.metals/metals (H2 2.1)
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory allAppliedMigrations
+INFO: Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.command.DbValidate validate
+INFO: Successfully validated 4 migrations (execution time 00:00.019s)
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory create
+INFO: Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.command.DbMigrate migrateGroup
+INFO: Current version of schema "PUBLIC": << Empty Schema >>
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.command.DbMigrate doMigrateGroup
+INFO: Migrating schema "PUBLIC" to version "1 - Create tables"
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.command.DbMigrate doMigrateGroup
+INFO: Migrating schema "PUBLIC" to version "2 - Server discovery"
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.command.DbMigrate doMigrateGroup
+INFO: Migrating schema "PUBLIC" to version "3 - Jar symbols"
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.command.DbMigrate doMigrateGroup
+INFO: Migrating schema "PUBLIC" to version "4 - Fingerprints"
+июн. 10, 2023 8:51:43 PM org.flywaydb.core.internal.command.DbMigrate logSummary
+INFO: Successfully applied 4 migrations to schema "PUBLIC", now at version v4 (execution time 00:00.040s)
+2023.06.10 20:51:43 INFO  time: initialize in 0.41s
+2023.06.10 20:51:45 WARN  Build server is not auto-connectable.
+июн. 10, 2023 8:51:45 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1
+2023.06.10 20:51:45 WARN  no build tool detected in workspace '/Users/vadim/Projects/OtusTeam/OTUS-Kafka/lesson-07'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2023.06.10 20:51:45 WARN  no build target for: /Users/vadim/Projects/OtusTeam/OTUS-Kafka/lesson-07/BaseExample/build.sbt
+2023.06.10 20:51:46 INFO  no build target found for /Users/vadim/Projects/OtusTeam/OTUS-Kafka/lesson-07/BaseExample/build.sbt. Using presentation compiler with project's scala-library version: 3.2.2
+2023.06.10 20:51:47 INFO  time: code lens generation in 2.81s
+2023.06.10 20:52:27 WARN  no build target for: /Users/vadim/Projects/OtusTeam/OTUS-Kafka/lesson-07/JSONExample/build.sbt
+2023.06.10 20:53:52 WARN  no build target for: /Users/vadim/Projects/OtusTeam/OTUS-Kafka/lesson-07/JSONExample/build.sbt
+2023.06.10 20:55:19 WARN  no build target for: /Users/vadim/Projects/OtusTeam/OTUS-Kafka/lesson-07/BaseExample/src/main/scala/ru/example/kafka/producer/Producer.scala
+2023.06.10 20:55:32 WARN  no build target for: /Users/vadim/Projects/OtusTeam/OTUS-Kafka/lesson-07/JSONExample/src/main/scala/ru/example/kafka/producer/Producer.scala
