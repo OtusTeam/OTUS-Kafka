@@ -1,0 +1,70 @@
+version: '3.4'
+
+services:
+  kafka_exporter:
+    image: danielqsj/kafka-exporter
+    networks:
+      - monitoring
+    command: --kafka.server=kafka1:9092 --kafka.server=kafka2:9092 --kafka.server=kafka3:9092
+    deploy:
+      mode: replicated
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M      
+      replicas: 1
+      endpoint_mode: vip
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+    volumes:
+      - /prometheus:/prometheus
+    secrets:
+      - prometheus.yml
+    command: --config.file=/run/secrets/prometheus.yml --storage.tsdb.path=/prometheus --storage.tsdb.retention=168h
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4096M
+        reservations:
+          memory: 1024M
+      replicas: 1
+      endpoint_mode: vip
+      placement:
+        constraints:
+           - "node.labels.prometheus == true"
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+    volumes:
+      - /var/lib/grafana:/var/lib/grafana
+    deploy:
+      mode: replicated
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+      replicas: 1
+      endpoint_mode: vip
+      placement:
+        constraints:
+           - "node.labels.grafana == true"
+
+secrets:
+  prometheus.yml:
+    file: config/prometheus.yml
+  alertmanager.yml:
+    file: config/alertmanager.yml
+
+networks:
+  monitoring:
+    external: true
