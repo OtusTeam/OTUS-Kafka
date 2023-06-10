@@ -1,0 +1,64 @@
+0) Запуск
+ssh kafka1, kafka2, kafka3
+    sudo systemctl start zookeeper
+    systemctl status zookeeper
+    sudo systemctl start kafka
+    systemctl status kafka
+    sudo su -l kafka
+    grep zookeeper.connect= config/server.properties
+    bin/zookeeper-shell.sh localhost:2181
+ls /
+ls /kafka
+^C
+
+1) Основные операции с топиками
+kafka-topics.sh --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-topics.sh --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-topics.sh --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --exclude-internal
+kafka-topics.sh --delete --topic __consumer_offsets --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-topics.sh --delete --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-topics.sh --delete --topic t31 --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-topics.sh --delete --topic t33 --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-topics.sh --create --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-topics.sh --describe --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-topics.sh --alter --topic test --partitions 3 --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-topics.sh --describe --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+2) Репликация
+kafka-topics.sh --create --topic t31 --partitions 3 --replication-factor 1 --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-topics.sh --create --topic t33 --partitions 3 --replication-factor 3 --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+Роняем брокер 2:
+ssh kafka2
+    sudo systemctl stop kafka
+    sudo systemctl status kafka
+kafka-topics.sh --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+Поднимаем брокер 2:
+ssh kafka2
+    sudo systemctl start kafka
+    sudo systemctl status kafka
+kafka-topics.sh --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+3) Данные в топиках
+ssh kafka1
+    ls -la data/kafka-logs/test-*
+kafka-producer-perf-test.sh --topic test --num-records 100 --record-size 10 --throughput -1 --producer-props bootstrap.servers=kafka1:9092,kafka2:9092,kafka3:9092
+ssh kafka1
+    ls -la data/kafka-logs/test-*
+kafka-log-dirs.sh --topic-list test --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-log-dirs.sh --topic-list test --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 | tail -1 | jq
+kafka-get-offsets.sh --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-console-consumer.sh --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --from-beginning --property print.offset=true --property print.key=true --property print.partition=true
+ssh kafka1
+    bin/kafka-dump-log.sh --files data/kafka-logs/test-2/00000000000000000000.log
+    bin/kafka-dump-log.sh --print-data-log --files data/kafka-logs/test-2/00000000000000000000.log
+kafka-delete-records.sh --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --offset-json-file deleteme.json
+kafka-get-offsets.sh --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-console-consumer.sh --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --from-beginning --property print.offset=true --property print.key=true --property print.partition=true
+
+4) Параметры
+kafka-configs.sh --describe --all --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-configs.sh --describe --all --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 | sort
+kafka-configs.sh --describe --entity-type topics --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-configs.sh --alter --add-config delete.retention.ms=86400 --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-configs.sh --describe --all --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 | sort
+kafka-configs.sh --describe delete.retention.ms --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
