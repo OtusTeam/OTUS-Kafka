@@ -1,0 +1,24 @@
+{
+    "name": "clients-smt-connector",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+        "connection.url": "jdbc:postgresql://postgres:5432/postgres",
+        "connection.user": "postgres",
+        "connection.password": "password",
+        "table.whitelist": "public.clients",
+        "numeric.mapping": "best_fit",
+        "mode": "timestamp",
+        "timestamp.column.name": "modified_date",
+        "validate.non.null": false,
+        "batch.max.rows": 100,
+        "topic.prefix": "postgres.",
+        "tasks.max": "1",
+        "transforms": "MaskField,InsertHeader",
+        "transforms.MaskField.type": "org.apache.kafka.connect.transforms.MaskField$Value",
+        "transforms.MaskField.fields": "card_number",
+        "transforms.MaskField.replacement": "****-****-****-*****",
+        "transforms.InsertHeader.type": "org.apache.kafka.connect.transforms.InsertHeader",
+        "transforms.InsertHeader.header": "source",
+        "transforms.InsertHeader.value.literal": "clients-smt-connector"
+        }
+   }

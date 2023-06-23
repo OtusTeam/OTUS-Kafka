@@ -1,0 +1,182 @@
+0) REST API
+- cd REST
+- docker run --rm -p 80:8080 -e SWAGGER_JSON_URL=https://kafka.apache.org/35/generated/connect_rest.yaml swaggerapi/swagger-ui
+- Открыть в броузере http://localhost
+
+1) Демо 1. Запуск Kafka Connect
+Запускаем Kafka
+- bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
+- bin/kafka-server-start.sh -daemon config/server.properties
+Запускаем Kafka Connect
+- bin/connect-distributed.sh -daemon config/connect-distributed.properties
+Проверяем статус и плагины коннекторов
+- curl http://localhost:8083 | jq
+- curl http://localhost:8083/connector-plugins | jq
+Останавливаем Kafka Connect
+- kill $(jps | grep ConnectDistributed | awk '{ print $1 }')
+Создаём папку для плагинов
+- mkdir -p /opt/kafka/plugins
+Копируем файловый плагин-коннектор в эту папку
+- cp /opt/kafka/libs/connect-file-3.4.0.jar /opt/kafka/plugins
+Пропишем папку для плагинов в конфигурационный файл Kafka Connect
+- cp config/connect-distributed.properties config/connect-distributed-p.properties
+- vi config/connect-distributed-p.properties
+Запускаем Kafka Connect
+- bin/connect-distributed.sh -daemon config/connect-distributed-p.properties
+Проверяем плагины коннекторов
+- curl http://localhost:8083/connector-plugins | jq
+Останавливаем Kafka и Kafka Connect
+- kill $(jps | grep ConnectDistributed | awk '{ print $1 }')
+- bin/kafka-server-stop.sh
+- bin/zookeeper-server-stop.sh
+
+2) Демо 2. Файловые источник и приёмник
+- cd Demo2
+Запускаем Kafka и Kafka Connect
+- docker-compose up -d
+- docker-compose ps -a
+(Опционально) Подключаемся к логам Connect (в другом терминале)
+- docker logs -f connect
+Проверяем статус и плагины коннекторов
+- curl http://localhost:8083 | jq
+- curl http://localhost:8083/connector-plugins | jq
+Создаём топик data
+- kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+- kafka-topics.sh --create --topic data --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+- kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+Создаём коннектор load-kafka
+- curl -X POST --data-binary "@source.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+Проверяем коннектор load-kafka
+- curl http://localhost:8083/connectors | jq
+- curl http://localhost:8083/connectors/load-kafka | jq
+Читаем топик data
+- kafka-console-consumer.sh --topic data --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --from-beginning
+Создаём коннектор dump-kafka
+- curl -X POST --data-binary "@dump.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+Проверяем коннектор dump-kafka
+- curl http://localhost:8083/connectors | jq
+- curl http://localhost:8083/connectors/dump-kafka | jq
+Проверяем выгрузку данных из топика в файл
+- docker exec connect ls -la /data
+- docker exec connect diff /data/source.csv /data/dump.csv
+Удаляем коннекторы
+- curl -X DELETE http://localhost:8083/connectors/dump-kafka
+- curl -X DELETE http://localhost:8083/connectors/load-kafka
+- curl http://localhost:8083/connectors | jq
+Останавливаем Kafka и Kafka Connect
+- docker-compose stop
+- docker container prune -f
+- docker volume prune -f
+- cd ..
+
+3) Демо 3. PostgreSQL
+- cd Demo3
+Запускаем Kafka и Kafka Connect
+- docker-compose up -d
+- docker-compose ps -a
+(Опционально) Подключаемся к логам Connect (в другом терминале)
+- docker logs -f connect
+Проверяем статус и плагины коннекторов
+- curl http://localhost:8083 | jq
+- curl http://localhost:8083/connector-plugins | jq
+Проверяем топики
+- kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+Проверяем конфигурацию коннектора
+- curl -X PUT -d '{"connector.class":"JdbcSource"}' -H "Content-Type: application/json" http://localhost:8083/connector-plugins/JdbcSourceConnector/config/validate | jq
+Подключаемся к базе и загружаем данные
+- docker exec -ti postgres psql -U postgres
+  postgres=# CREATE TABLE clients (id int PRIMARY KEY, first_name text, last_name text, gender text, card_number text, bill numeric(7,2), created_date timestamp, modified_date timestamp);
+  postgres=# COPY clients FROM '/data/Demo.csv' WITH (FORMAT csv, HEADER true);
+  postgres=# select * from clients limit 5;
+  postgres=# \q
+Создаём коннектор clients-connector
+- curl -X POST --data-binary "@clients.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+Проверяем коннектор inventory-connector
+- curl http://localhost:8083/connectors | jq
+- curl http://localhost:8083/connectors/clients-connector | jq
+Проверяем топики
+- kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+Проверим смещение в топике postgres.clients
+- kafka-get-offsets.sh --topic postgres.clients --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+Читаем топик postgres.clients
+- kafka-console-consumer.sh --topic postgres.clients --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --from-beginning --property print.offset=true
+Подключаемся к базе и обновляем данные (в другом терминале)
+- docker exec -ti postgres psql -U postgres
+  postgres=# update clients set bill = 5000, modified_date = current_timestamp(0)  where id = 262;
+  postgres=# \q
+Удаляем коннектор
+- curl -X DELETE http://localhost:8083/connectors/clients-connector
+Останавливаем Kafka и Kafka Connect
+- docker-compose stop
+- docker container prune -f
+- docker volume prune -f
+- cd ..
+
+4) Демо 4. PostgreSQL CDC
+- cd Demo4
+Запускаем Kafka и Kafka Connect
+- docker-compose up -d
+- docker-compose ps -a
+(Опционально) Подключаемся к логам Connect (в другом терминале)
+- docker logs -f connect
+Подключаемся к базе (в другом терминале)
+- docker exec -ti -e PGOPTIONS="--search_path=inventory" postgres psql -U postgres
+  postgres=# select * from customers;
+Проверяем статус и плагины коннекторов
+- curl http://localhost:8083 | jq
+- curl http://localhost:8083/connector-plugins | jq
+Создаём коннектор inventory-connector
+- curl -X POST --data-binary "@inventory.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+Проверяем коннектор inventory-connector
+- curl http://localhost:8083/connectors | jq
+- curl http://localhost:8083/connectors/inventory-connector | jq
+Проверяем топики
+- kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+Читаем топик dbserver1.inventory.customers
+- kafka-console-consumer.sh --topic dbserver1.inventory.customers --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --from-beginning
+Обновляем запись в таблице (в другом терминале)
+- postgres=# update customers set first_name = 'Sarah' where id = 1001;
+Удаляем коннектор
+- curl -X DELETE http://localhost:8083/connectors/inventory-connector
+Останавливаем Kafka и Kafka Connect
+- docker-compose stop
+- docker container prune -f
+- docker volume prune -f
+- cd ..
+
+5) Демо 5. PostgreSQL преобразования
+- cd Demo5
+Запускаем Kafka и Kafka Connect
+- docker-compose up -d
+- docker-compose ps -a
+(Опционально) Подключаемся к логам Connect (в другом терминале)
+- docker logs -f connect
+Проверяем статус и плагины коннекторов
+- curl http://localhost:8083 | jq
+- curl http://localhost:8083/connector-plugins | jq
+Проверяем топики
+- kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+Подключаемся к базе и загружаем данные
+- docker exec -ti postgres psql -U postgres
+  postgres=# CREATE TABLE clients (id int PRIMARY KEY, first_name text, last_name text, gender text, card_number text, bill numeric(7,2), created_date timestamp, modified_date timestamp);
+  postgres=# COPY clients FROM '/data/Demo.csv' WITH (FORMAT csv, HEADER true);
+  postgres=# select * from clients limit 5;
+  postgres=# \q
+Создаём коннектор clients-smt-connector
+- curl -X POST --data-binary "@clients-smt.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+Проверяем коннектор inventory-connector
+- curl http://localhost:8083/connectors | jq
+- curl http://localhost:8083/connectors/clients-smt-connector | jq
+Проверяем топики
+- kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+Проверим смещение в топике postgres.clients
+- kafka-get-offsets.sh --topic postgres.clients --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+Читаем топик postgres.clients
+- kafka-console-consumer.sh --topic postgres.clients --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --from-beginning --property print.headers=true --property print.offset=true
+Удаляем коннектор
+- curl -X DELETE http://localhost:8083/connectors/clients-smt-connector
+Останавливаем Kafka и Kafka Connect
+- docker-compose stop
+- docker container prune -f
+- docker volume prune -f
+- cd ..
