@@ -26,6 +26,8 @@ public class FixedSizePriorityQueueAdapter extends TypeAdapter<FixedSizePriority
             return;
         }
 
+        writer.value(value.getMaxSize());
+
 
         Iterator<ShareVolume> iterator = value.iterator();
         List<ShareVolume> list = new ArrayList<>();
@@ -44,6 +46,8 @@ public class FixedSizePriorityQueueAdapter extends TypeAdapter<FixedSizePriority
 
     @Override
     public FixedSizePriorityQueue<ShareVolume> read(JsonReader reader) throws IOException {
+        var maxSize = reader.nextInt();
+
         List<ShareVolume> list = new ArrayList<>();
         reader.beginArray();
         while (reader.hasNext()) {
@@ -52,7 +56,7 @@ public class FixedSizePriorityQueueAdapter extends TypeAdapter<FixedSizePriority
         reader.endArray();
 
         Comparator<ShareVolume> c = (c1, c2) -> c2.getShares() - c1.getShares();
-        FixedSizePriorityQueue<ShareVolume> fixedSizePriorityQueue = new FixedSizePriorityQueue<>(c, 5);
+        FixedSizePriorityQueue<ShareVolume> fixedSizePriorityQueue = new FixedSizePriorityQueue<>(c, maxSize);
 
         for (ShareVolume transaction : list) {
             fixedSizePriorityQueue.add(transaction);

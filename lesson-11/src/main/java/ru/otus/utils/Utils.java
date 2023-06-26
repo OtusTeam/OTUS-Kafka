@@ -37,6 +37,8 @@ public class Utils {
     public static final String STOCK_TICKER_STREAM_TOPIC = "stock-ticker-topic";
     public static final String STOCK_TRANSACTIONS_TOPIC = "stock-transactions-topic";
     public static final String FINANCIAL_NEWS = "financial-news-topic";
+    public static final String COMPANIES = "companies-topic";
+    public static final String CLIENTS = "clients-topic";
 
     public static final Map<String, Object> producerConfig = Map.of(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, HOST,
@@ -143,9 +145,9 @@ public class Utils {
         recreatePurchaseTopics(1);
     }
 
-    public static void recreateStockTopics() {
-        Utils.recreateTopics(1, 1,
-                STOCK_TICKER_TABLE_TOPIC, STOCK_TICKER_STREAM_TOPIC, STOCK_TRANSACTIONS_TOPIC, FINANCIAL_NEWS);
+    public static void recreateStockTopics(int numOfPartitions) {
+        Utils.recreateTopics(numOfPartitions, 1,
+                STOCK_TICKER_TABLE_TOPIC, STOCK_TICKER_STREAM_TOPIC, STOCK_TRANSACTIONS_TOPIC, FINANCIAL_NEWS, COMPANIES, CLIENTS);
     }
 
     public static void runPurchaseApp(StreamsBuilder builder, String name) throws Exception {
@@ -167,7 +169,14 @@ public class Utils {
     public static void runStockApp(StreamsBuilder builder, String name,
                                    AbstractProducer producer,
                                    Consumer<Map<String, Object>> configBuilder) throws Exception {
-        recreateStockTopics();
+        runStockApp(builder, name, 1, producer, configBuilder);
+    }
+
+    public static void runStockApp(StreamsBuilder builder, String name,
+                                   int numOfPartitions,
+                                   AbstractProducer producer,
+                                   Consumer<Map<String, Object>> configBuilder) throws Exception {
+        recreateStockTopics(numOfPartitions);
 
         var topology = builder.build();
 
@@ -176,15 +185,6 @@ public class Utils {
         try (
                 var kafkaStreams = new KafkaStreams(topology, Utils.createStreamsConfig(b -> {
                     b.put(StreamsConfig.APPLICATION_ID_CONFIG, name + "-" + UUID.randomUUID().hashCode());
-/*
-                    b.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 15000);
-                    b.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-                    b.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 30000);
-                    b.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, 1);
-                    b.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, 10000);
-                    b.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1);
-                    b.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class);*/
-
                     b.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
 
                     configBuilder.accept(b);

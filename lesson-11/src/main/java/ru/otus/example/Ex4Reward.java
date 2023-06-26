@@ -37,7 +37,6 @@ public class Ex4Reward {
                 .selectKey((k, v) -> "some-not-null") // почему-то без ключа сообщения не уходят :(
                 .repartition(Repartitioned.with(stringSerde, purchaseSerde).withStreamPartitioner(new RewardPartitioner()))
                  // */
-                .peek((k, p) -> Utils.log.info("Purchase222: {}", p))
                 // пишем паттерны продаж
                 .processValues(RewardProcessor::new, "reward-store-name") // **
                 //

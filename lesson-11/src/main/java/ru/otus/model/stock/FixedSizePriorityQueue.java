@@ -1,6 +1,8 @@
 package ru.otus.model.stock;
 
 
+import lombok.Getter;
+
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -13,6 +15,7 @@ import java.util.TreeSet;
 public class FixedSizePriorityQueue<T> {
 
     private TreeSet<T> inner;
+    @Getter
     private int maxSize;
 
 

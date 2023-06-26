@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static ru.otus.utils.Utils.CLIENTS;
+import static ru.otus.utils.Utils.COMPANIES;
 import static ru.otus.utils.Utils.FINANCIAL_NEWS;
 import static ru.otus.utils.Utils.STOCK_TRANSACTIONS_TOPIC;
 
@@ -32,10 +34,10 @@ public class StockTransactionProducer extends AbstractProducer {
         List<PublicTradedCompany> companies = DataGenerator.generatePublicTradedCompanies(numberTradedCompanies);
         List<DataGenerator.Customer> customers = DataGenerator.generateCustomers(numberCustomers);
 
-        /*if (populateGlobalTables) {
-            populateCompaniesGlobalKTable(companies);
-            populateCustomersGlobalKTable(customers);
-        }*/
+        if (populateGlobalTables) {
+            populateCompaniesGlobalKTable(companies, producer);
+            populateCustomersGlobalKTable(customers, producer);
+        }
 
         publishFinancialNews(companies, producer);
 
@@ -67,5 +69,22 @@ public class StockTransactionProducer extends AbstractProducer {
         }
         producer.flush();
         Utils.log.info("Financial news sent");
+    }
+
+    private void populateCompaniesGlobalKTable(List<PublicTradedCompany> companies, KafkaProducer<String, String> producer) {
+        for (PublicTradedCompany company : companies) {
+            ProducerRecord<String, String> record = new ProducerRecord<>(COMPANIES, company.getSymbol(), company.getName());
+            producer.send(record);
+        }
+        producer.flush();
+    }
+
+    private static void populateCustomersGlobalKTable(List<DataGenerator.Customer> customers, KafkaProducer<String, String> producer) {
+        for (DataGenerator.Customer customer : customers) {
+            String customerName = customer.getLastName() + ", " + customer.getFirstName();
+            ProducerRecord<String, String> record = new ProducerRecord<>(CLIENTS, customer.getCustomerId(), customerName);
+            producer.send(record);
+        }
+        producer.flush();
     }
 }

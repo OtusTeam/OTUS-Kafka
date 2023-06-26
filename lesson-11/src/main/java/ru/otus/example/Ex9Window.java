@@ -40,7 +40,10 @@ public class Ex9Window {
                         Grouped.with(transactionKeySerde, transactionSerde))
                 .windowedBy(SessionWindows.ofInactivityGapAndGrace(twentySeconds, fifteenMinutes))
                 .count();
-        customerTransactionCounts.toStream().print(Printed.<Windowed<TransactionSummary>, Long>toSysOut().withLabel("Customer Transactions Counts"));
+        customerTransactionCounts.toStream()
+                .foreach((k, v) -> {
+                    Utils.log.info("Window {}: {}", k, v);
+                });
 
         KStream<String, TransactionSummary> countStream = customerTransactionCounts.toStream().map((window, count) -> {
             TransactionSummary transactionSummary = window.key();
@@ -48,6 +51,9 @@ public class Ex9Window {
             return KeyValue.pair(newKey, transactionSummary.toBuilder()
                     .summaryCount(count)
                     .build());
+        });
+        countStream.foreach((k, v) -> {
+            Utils.log.info("Count {}: {}", k, v);
         });
 
         Utils.runStockApp(builder, "ex8",

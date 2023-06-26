@@ -2,6 +2,7 @@ package ru.otus.example;
 
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.kstream.Branched;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Named;
@@ -10,7 +11,10 @@ import ru.otus.model.purchase.Purchase;
 import ru.otus.model.purchase.PurchasePattern;
 import ru.otus.model.purchase.RewardAccumulator;
 import ru.otus.serde.AppSerdes;
+import ru.otus.service.SecurityDBService;
 import ru.otus.utils.Utils;
+
+import java.util.Map;
 
 public class Ex3Purchase {
     public static void main(String[] args) throws Exception {
