@@ -6,7 +6,6 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.Consumed;
-import org.apache.kafka.streams.kstream.GlobalKTable;
 import org.apache.kafka.streams.kstream.Grouped;
 import org.apache.kafka.streams.kstream.Joined;
 import org.apache.kafka.streams.kstream.KStream;
@@ -25,7 +24,7 @@ import static ru.otus.utils.Utils.CLIENTS;
 import static ru.otus.utils.Utils.COMPANIES;
 import static ru.otus.utils.Utils.STOCK_TRANSACTIONS_TOPIC;
 
-public class Ex10GlovalKTable2 {
+public class Ex10GlobalKTable1 {
     public static void main(String[] args) throws Exception {
         var builder = new StreamsBuilder();
 
@@ -53,19 +52,20 @@ public class Ex10GlovalKTable2 {
                 })
                 .peek((k, v) -> Utils.log.info("Source {}: {}", k, v));
 
-        GlobalKTable<String, String> companiesTable = builder.globalTable(COMPANIES, Utils.materialized("companies-store", stringSerde, stringSerde));
-        GlobalKTable<String, String> clientsTable = builder.globalTable(CLIENTS, Consumed.with(stringSerde, stringSerde), Materialized.as("clients-store"));
+        KTable<String, String> companiesTable = builder.table(COMPANIES, Utils.materialized("companies-store", stringSerde, stringSerde));
+        KTable<String, String> clientsTable = builder.table(CLIENTS, Consumed.with(stringSerde, stringSerde), Materialized.as("clients-store"));
 
         countStream
                 // обогащаем названием компании
-                // **1**
+                // **1** selectKey + нужный join. Обязательно укажите Joined.with(stringSerde, transactionKeySerde, stringSerde)
                 // обогащаем названием клиента
-                // **2**
-                // выводим
+                // **2** selectKey + нужный join. Обязательно укажите Joined.with(stringSerde, transactionKeySerde, stringSerde)
+                // возвращаем ключ обратно и выводим
+                // **3** selectKey
                 .foreach((k, v) -> Utils.log.info("Result {}: {}", k, v));
 
 
-        Utils.runStockApp(builder, "ex10-2", 1,
+        Utils.runStockApp(builder, "ex10-1", 2,
                 new StockTransactionProducer(15, 50, 25, true),
                 b -> {
                     b.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1000);

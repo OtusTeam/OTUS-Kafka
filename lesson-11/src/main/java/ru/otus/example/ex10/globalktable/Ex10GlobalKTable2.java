@@ -8,6 +8,7 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.GlobalKTable;
 import org.apache.kafka.streams.kstream.Grouped;
+import org.apache.kafka.streams.kstream.Joined;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.SessionWindows;
@@ -23,7 +24,7 @@ import static ru.otus.utils.Utils.CLIENTS;
 import static ru.otus.utils.Utils.COMPANIES;
 import static ru.otus.utils.Utils.STOCK_TRANSACTIONS_TOPIC;
 
-public class Ex10GlovalKTable2Answer {
+public class Ex10GlobalKTable2 {
     public static void main(String[] args) throws Exception {
         var builder = new StreamsBuilder();
 
@@ -56,11 +57,9 @@ public class Ex10GlovalKTable2Answer {
 
         countStream
                 // обогащаем названием компании
-                .leftJoin(companiesTable, (k, v) -> v.getStockTicker(),
-                        (summary, company) -> summary.toBuilder().companyName(company).build())
+                // **1**
                 // обогащаем названием клиента
-                .leftJoin(clientsTable, (k, v) -> v.getCustomerId(),
-                        (summary, client) -> summary.toBuilder().customerName(client).build())
+                // **2**
                 // выводим
                 .foreach((k, v) -> Utils.log.info("Result {}: {}", k, v));
 

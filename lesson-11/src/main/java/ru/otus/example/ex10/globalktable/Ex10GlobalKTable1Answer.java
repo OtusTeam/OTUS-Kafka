@@ -24,7 +24,7 @@ import static ru.otus.utils.Utils.CLIENTS;
 import static ru.otus.utils.Utils.COMPANIES;
 import static ru.otus.utils.Utils.STOCK_TRANSACTIONS_TOPIC;
 
-public class Ex10GlovalKTable1Answer {
+public class Ex10GlobalKTable1Answer {
     public static void main(String[] args) throws Exception {
         var builder = new StreamsBuilder();
 
