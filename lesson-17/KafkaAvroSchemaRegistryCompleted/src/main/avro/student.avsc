@@ -1,0 +1,29 @@
+{
+  "type": "record",
+  "name": "Student",
+  "namespace": "ru.otus.kafka",
+  "fields": [
+    {
+      "name": "Id",
+      "type": "int"
+    },
+    {
+      "name": "Name",
+      "type": "string"
+    },
+    {
+      "name": "Surname",
+      "type": "string"
+    },
+    {
+      "name": "Courses",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "CourseTitle",
+          "type": "string"
+        }
+      }
+      }
+  ]
+}

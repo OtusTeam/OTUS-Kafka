@@ -1,0 +1,28 @@
+//Register the student schema
+curl --request POST \
+  --url http://localhost:8081/subjects/students-value/versions \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "schema": "{\n  \"type\": \"record\",\n  \"name\": \"Student\",\n  \"namespace\": \"ru.otus.kafka\",\n  \"fields\": [\n    {\n      \"name\": \"Id\",\n      \"type\": \"int\"\n    },\n    {\n      \"name\": \"Name\",\n      \"type\": \"string\"\n    },\n    {\n      \"name\": \"Surname\",\n      \"type\": \"string\"\n    },\n    {\n      \"name\": \"Courses\",\n      \"type\": {\n        \"type\": \"array\",\n        \"items\": {\n          \"name\": \"CourseTitle\",\n          \"type\": \"string\"\n        }\n      }\n      }\n  ]\n}"
+}'
+
+//Get schema by ID
+curl --request GET \
+  --url http://localhost:8081/schemas/ids/1
+
+//Get schema by subject
+curl --request GET \
+  --url http://localhost:8081/subjects/students-value/versions/1
+
+//Put a new version of student schema
+curl --request POST \
+  --url http://localhost:8081/subjects/students-value/versions \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "schema": "{\n  \"type\": \"record\",\n  \"name\": \"Student\",\n  \"namespace\": \"ru.otus.kafka\",\n  \"fields\": [\n    {\n      \"name\": \"Id\",\n      \"type\": \"int\"\n    },\n    {\n      \"name\": \"Name\",\n      \"type\": \"string\"\n    },\n    {\n      \"name\": \"Surname\",\n      \"type\": \"string\"\n    },\n    {\n      \"name\": \"Courses\",\n      \"type\": {\n        \"type\": \"array\",\n        \"items\": {\n          \"name\": \"CourseTitle\",\n          \"type\": \"string\"\n        }\n      }\n      },\n    {\n      \"name\": \"email\",\n      \"type\": \"string\"\n    }\n  ]\n}"}'
+
+//Change compatibility
+curl --request PUT \
+  --url http://localhost:8081/config/students-value \
+  --header 'Content-Type: application/json' \
+  --data '{"compatibility": "NONE"}'
