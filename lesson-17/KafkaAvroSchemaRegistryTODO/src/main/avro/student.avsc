@@ -16,6 +16,22 @@
       "type": "string"
     },
     {
+      "name": "email",
+      "type": "string"
+    },
+    {
+      "name": "location",
+      "type": "string"
+    },
+    {
+      "name": "rating_value",
+      "type": {
+        "type": "enum",
+        "name": "Rating",
+        "symbols": ["EXCELLENT", "GOOD", "AVERAGE"]
+      }
+    },
+    {
       "name": "Courses",
       "type": {
         "type": "array",
