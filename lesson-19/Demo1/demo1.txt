@@ -2,10 +2,10 @@
 docker-compose up -d
 
 2) Создаём топик users
-docker exec broker kafka-topics --create --topic users --bootstrap-server localhost:9092
+docker exec broker kafka-topics --create --topic users --bootstrap-server broker:9092
 
 3) Проверяем список топиков
-docker exec broker kafka-topics --list --bootstrap-server localhost:9092
+docker exec broker kafka-topics --list --bootstrap-server broker:9092
 
 4) Запускаем ksqlDB CLI в первом терминале
 docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
