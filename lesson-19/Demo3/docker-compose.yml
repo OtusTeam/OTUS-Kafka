@@ -62,6 +62,21 @@ services:
     depends_on:
       - zookeeper
 
+  schema-registry:
+    image: confluentinc/cp-schema-registry:latest
+    container_name: schema-registry
+    hostname: schema-registry
+    depends_on:
+      - zookeeper
+      - kafka1
+      - kafka2
+      - kafka3
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka1:19092,kafka2:19093,kafka3:19094"
+
   connect:
     image: confluentinc/cp-kafka-connect:latest
     container_name: connect
@@ -80,11 +95,10 @@ services:
       CONNECT_CONFIG_STORAGE_TOPIC: "local-connect-config"
       CONNECT_OFFSET_STORAGE_TOPIC: "local-connect-offsets"
       CONNECT_STATUS_STORAGE_TOPIC: "local-connect-status"
-      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_REST_ADVERTISED_HOST_NAME: "localhost"
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_VALUE_CONVERTER: "io.confluent.connect.avro.AvroConverter"
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "connect"
       CONNECT_LOG4J_ROOT_LOGLEVEL: "INFO"
       CONNECT_PLUGIN_PATH: /usr/share/java/,/etc/kafka-connect/jars
     volumes:
@@ -106,6 +120,7 @@ services:
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
       KSQL_KSQL_CONNECT_URL: http://connect:8083
+      KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry:8081
 
   ksqldb-cli:
     image: confluentinc/ksqldb-cli:0.29.0
@@ -120,10 +135,13 @@ services:
     tty: true
 
   postgres:
-    image: postgres:latest
+    image: debezium/postgres:latest
     container_name: postgres
     hostname: postgres
     ports:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: password
+    volumes:
+      - ./postgres/custom-config.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
