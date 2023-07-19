@@ -16,15 +16,13 @@ scrape_configs:
       - 'tasks.prometheus'
       type: 'A'
       port: 9090
-  - job_name: 'kafka_exporter'
-    dns_sd_configs:
-    - names:
-      - 'tasks.kafka_exporter'
-      type: 'A'
-      port: 9308
-  - job_name: 'kafka'
+  - job_name: 'kafka-exporter'
     static_configs:
     - targets:
-      - kafka1:7071
-      - kafka2:7071
-      - kafka3:7071
+      - kafka_exporter:9308
+  - job_name: 'jmx-exporter'
+    static_configs:
+    - targets:
+      - kafka1:9141
+      - kafka2:9142
+      - kafka3:9143
