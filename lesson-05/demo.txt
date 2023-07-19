@@ -14,7 +14,7 @@
 
 1.4) Нагружаем Kafka
     kafka-topics.sh --create --topic test --bootstrap-server localhost:9092
-    kafka-producer-perf-test.sh --topic test --num-records 1000 --record-size 10 --throughput -1 --producer-props bootstrap.servers=localhost:9092
+    kafka-producer-perf-test.sh --topic test --num-records 1000000 --record-size 100 --throughput -1 --producer-props bootstrap.servers=localhost:9092
 
 1.5) Останавливаем
     bin/kafka-server-stop.sh
@@ -45,8 +45,8 @@
         -> https://grafana.com/grafana/dashboards/721
 
 2.6) Нагружаем Kafka
-    kafka-topics.sh --create --topic test --bootstrap-server localhost:9092,localhost:9093,localhost:9094
-    kafka-producer-perf-test.sh --topic test --num-records 1000 --record-size 10 --throughput -1 --producer-props bootstrap.servers=localhost:9092,localhost:9093,localhost:9094
+    kafka-topics.sh --create --topic test --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --partitions 3 --replication-factor 3
+    kafka-producer-perf-test.sh --topic test --num-records 1000000 --record-size 100 --throughput -1 --producer-props bootstrap.servers=localhost:9092,localhost:9093,localhost:9094
 
 2.7) Останавливаем
     docker-compose stop
@@ -63,9 +63,10 @@
     Открываем http://localhost:3000
 
 3.3) Нагружаем Kafka
-    kafka-topics.sh --create --topic test --bootstrap-server localhost:9092,localhost:9093,localhost:9094
-    kafka-producer-perf-test.sh --topic test --num-records 1000 --record-size 10 --throughput -1 --producer-props bootstrap.servers=localhost:9092,localhost:9093,localhost:9094
-
+    kafka-topics.sh --create --topic test --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --partitions 3 --replication-factor 3
+    kafka-producer-perf-test.sh --topic test --num-records 1000000 --record-size 100 --throughput -1 --producer-props bootstrap.servers=localhost:9092,localhost:9093,localhost:9094
+    kafka-consumer-perf-test.sh --topic test --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --messages 1000000
+    
 3.4) Останавливаем
     docker-compose stop
     docker container prune -f
