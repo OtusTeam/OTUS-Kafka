@@ -8,9 +8,9 @@ ThisBuild / libraryDependencies ++= Seq(
 )
 
 lazy val root = (project in file("."))
-  .settings(name := "Producer")
-  .settings(assembly / mainClass := Some("ru.example.kafka.producer.Producer"))
-  .settings(assembly / assemblyJarName := "producer.jar")
+  .settings(name := "Consumer")
+  .settings(assembly / mainClass := Some("ru.example.kafka.consumer.Consumer"))
+  .settings(assembly / assemblyJarName := "consumer.jar")
   .settings(assembly / assemblyMergeStrategy := {
     case m if m.toLowerCase.endsWith("manifest.mf")       => MergeStrategy.discard
     case m if m.toLowerCase.matches("meta-inf.*\\.sf$")   => MergeStrategy.discard
