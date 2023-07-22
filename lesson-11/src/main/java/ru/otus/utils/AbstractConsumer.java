@@ -14,8 +14,6 @@ public abstract class AbstractConsumer implements AutoCloseable {
     protected final Map<String, Object> config;
     protected final String name;
 
-    protected boolean debug = false;
-
     public AbstractConsumer(String name, String topic, Map<String, Object> config) {
         this.topic = topic;
         this.name = name;
@@ -39,19 +37,15 @@ public abstract class AbstractConsumer implements AutoCloseable {
     private void process() {
         onStartProcess();
 
-        try {
-            try (var consumer = new KafkaConsumer<String, String>(config)) {
-                consumer.subscribe(List.of(topic));
+        try (var consumer = new KafkaConsumer<String, String>(config)) {
+            consumer.subscribe(List.of(topic));
+            Utils.log.info("Subscribed");
 
 
-                while (!Thread.interrupted()) {
-                    var read = consumer.poll(Duration.ofSeconds(1));
-                    if (debug) {
-                        Utils.log.info("read: {}", read.count());
-                    }
-                    for (var record : read) {
-                        processOne(record);
-                    }
+            while (!Thread.interrupted()) {
+                var read = consumer.poll(Duration.ofSeconds(1));
+                for (var record : read) {
+                    processOne(record);
                 }
             }
         }

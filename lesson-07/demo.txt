@@ -1,0 +1,228 @@
+SSL
+---
+- keystore - хранилище ключей и сертификатов
+- truststore - хранилище сертификатов, которым доверяет носитель хранилища
+- ca-cert: сертификат центра сертификации (CA)
+- ca-key: закрытый (private) ключ центра сертификации (CA)
+- ca-password: ключевая фраза (passphrase) центра сертификации (CA)
+- cert-file: экспортированный неподписанный сертификат сервера
+- cert-signed: подписанный сертификат сервера
+
+1) Создать SSL ключ и сертификат для каждого брокера и клиента
+
+- Брокер localhost
+keytool -genkey \
+-keyalg RSA \
+-keystore server.keystore.jks \
+-keypass password \
+-alias localhost \
+-validity 365 \
+-storetype pkcs12 \
+-storepass password \
+-dname "CN=localhost,OU=Kafka,O=Otus,L=Moscow,ST=Moscow,C=RU"
+
+- Клиент client
+keytool -genkey \
+-keyalg RSA \
+-keystore client.keystore.jks \
+-keypass password \
+-alias client \
+-validity 365 \
+-storetype pkcs12 \
+-storepass password \
+-dname "CN=client,OU=Clients,O=Otus,L=Moscow,ST=Moscow,C=RU"
+
+2) Создать собственный центр авторизации
+
+- Создаём центр сертификации, который представляет собой просто пару открытых ключей и сертификат, и он предназначен для подписи других сертификатов:
+openssl req -new -x509 -keyout ca-key -out ca-cert -days 365
+
+- Добавляем сгенерированный центр сертификации в хранилище доверия клиентов, чтобы клиенты могли доверять этому центру сертификации:
+keytool -importcert -keystore client.truststore.jks -alias CARoot -file ca-cert
+
+- Добавляем сгенерированный центр сертификации в хранилище доверия брокеров, чтобы брокеры могли доверять этому центру сертификации:
+keytool -importcert -keystore server.truststore.jks -alias CARoot -importcert -file ca-cert
+
+3) Подписать сертификат
+Подписать все сертификаты в хранилище ключей с помощью созданного центра сертификации
+
+- Экспортируем сертификат из хранилища ключей:
+keytool -certreq -keystore server.keystore.jks -alias localhost -file cert-file
+keytool -certreq -keystore client.keystore.jks -alias client -file cert-client-file
+
+- Подписываем его в центре сертификации:
+openssl x509 -req -CA ca-cert -CAkey ca-key -in cert-file -out cert-signed -days 365 -CAcreateserial -passin pass:password
+openssl x509 -req -CA ca-cert -CAkey ca-key -in cert-client-file -out cert-client-signed -days 365 -CAcreateserial -passin pass:password
+
+- Импортируем сертификат центра сертификации и подписанный сертификат в хранилище ключей брокера:
+keytool -importcert -keystore server.keystore.jks -alias CARoot -file ca-cert
+keytool -importcert -keystore server.keystore.jks -alias localhost -file cert-signed
+
+- Импортируем сертификат центра сертификации и подписанный сертификат в хранилище ключей клиента:
+keytool -importcert -keystore client.keystore.jks -alias CARoot -file ca-cert
+keytool -importcert -keystore client.keystore.jks -alias client -file cert-client-signed
+
+- Проверка:
+keytool -list -v -keystore server.keystore.jks
+keytool -list -v -keystore client.keystore.jks
+
+4) Настроить брокер
+
+- Файл server-ssl.properties
+
+listeners=SSL://:9093
+ssl.keystore.location=/opt/kafka/private/server.keystore.jks
+ssl.keystore.password=password
+ssl.key.password=password
+ssl.truststore.location=/opt/kafka/private/server.truststore.jks
+ssl.truststore.password=password
+security.inter.broker.protocol=SSL
+ssl.client.auth=requested
+ssl.endpoint.identification.algorithm=
+
+5) Настроить клиента   
+
+- Файл client-ssl.properties
+
+security.protocol=SSL
+ssl.truststore.location=/var/private/ssl/client.truststore.jks
+ssl.truststore.password=password
+
+6) Проверка SSL без аутентификации
+
+zookeeper-server-start.sh -daemon config/zookeeper.properties
+kafka-server-start.sh -daemon config/server-ssl.properties
+kafka-topics.sh --list --bootstrap-server localhost:9093 --command-config client-ssl.properties
+kafka-topics.sh --create --topic test --bootstrap-server localhost:9093 --command-config client-ssl.properties
+kafka-topics.sh --list --bootstrap-server localhost:9093 --command-config client-ssl.properties               
+kafka-console-producer.sh --bootstrap-server localhost:9093 --topic test --producer.config client-ssl.properties
+kafka-console-consumer.sh --bootstrap-server localhost:9093 --topic test --consumer.config client-ssl.properties -from-beginning
+
+kafka-configs.sh --bootstrap-server localhost:9093 --entity-type brokers --entity-name 0 --describe --all --command-config client-ssl.properties | sort
+
+kafka-server-stop.sh
+zookeeper-server-stop.sh
+
+7) Проверка SSL с аутентификацией
+
+zookeeper-server-start.sh -daemon config/zookeeper.properties
+kafka-server-start.sh -daemon config/server-ssl-auth.properties
+kafka-topics.sh --list --bootstrap-server localhost:9093 --command-config client-ssl.properties
+kafka-topics.sh --list --bootstrap-server localhost:9093 --command-config client-ssl-auth.properties
+kafka-console-producer.sh --bootstrap-server localhost:9093 --topic test --producer.config client-ssl-auth.properties
+kafka-console-consumer.sh --bootstrap-server localhost:9093 --topic test --consumer.config client-ssl-auth.properties -from-beginning
+
+kafka-configs.sh --bootstrap-server localhost:9093 --entity-type brokers --entity-name 0 --describe --all --command-config client-ssl-auth.properties | sort
+
+kafka-server-stop.sh
+zookeeper-server-stop.sh
+---
+
+
+SASL
+----
+1) Настроить и запустить ZooKeeper
+
+- Файл zookeeper-sasl.properties
+
+authProvider.sasl=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+
+- Файл zookeeper_jaas.conf
+
+Server {
+    org.apache.zookeeper.server.auth.DigestLoginModule required
+    user_super="admin-secret"
+    user_kafka="kafka-secret";
+};
+
+KAFKA_OPTS="-Djava.security.auth.login.config=/opt/kafka/private/zookeeper_jaas.conf" /opt/kafka/bin/zookeeper-server-start.sh -daemon /opt/kafka/config/zookeeper-sasl.properties
+
+2) Настроить и запустить брокер
+
+- Файл server-sasl.properties
+
+listeners=SSL://:9093,SASL_SSL://:9094
+security.inter.broker.protocol=SSL
+ssl.client.auth=required
+ssl.keystore.location=/opt/kafka/private/server.keystore.jks
+ssl.keystore.password=password
+ssl.key.password=password
+ssl.truststore.location=/opt/kafka/private/server.truststore.jks
+ssl.truststore.password=password
+ssl.endpoint.identification.algorithm=
+sasl.enabled.mechanisms=PLAIN
+
+- Файл kafka_server_jaas.conf
+KafkaServer {
+    org.apache.kafka.common.security.plain.PlainLoginModule required
+    username="kafkabroker"
+    password="kafkabroker-secret"
+    user_kafkabroker="kafkabroker-secret"
+    user_kafka-broker-metric-reporter="kafkabroker-metric-reporter-secret"
+    user_client="client-secret";
+};
+
+Client {
+    org.apache.zookeeper.server.auth.DigestLoginModule required
+    username="kafka"
+    password="kafka-secret";
+};
+
+KAFKA_OPTS="-Djava.security.auth.login.config=/opt/kafka/private/kafka_server_jaas.conf" /opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/server-sasl.properties
+
+3) Настроить клиента
+
+- Файл client-sasl.properties
+
+security.protocol=SASL_SSL
+ssl.truststore.location=/var/private/ssl/client.truststore.jks
+ssl.truststore.password=password
+sasl.mechanism=PLAIN
+sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+    username="client" \
+    password="client-secret";
+
+4) Проверка
+
+kafka-topics.sh --list --bootstrap-server localhost:9094 --command-config client-sasl.properties
+kafka-console-producer.sh --bootstrap-server localhost:9094 --topic test --producer.config client-sasl.properties
+kafka-console-consumer.sh --bootstrap-server localhost:9094 --topic test --consumer.config client-sasl.properties -from-beginning
+
+kafka-server-stop.sh
+zookeeper-server-stop.sh
+---
+
+ACL
+---
+1) Настроить брокер
+
+- Файл server-acl.properties
+
+authorizer.class.name=kafka.security.authorizer.AclAuthorizer
+allow.everyone.if.no.acl.found=true
+super.users=User:Bob;User:Alice
+
+2) Запустить 
+
+KAFKA_OPTS="-Djava.security.auth.login.config=/opt/kafka/private/zookeeper_jaas.conf" /opt/kafka/bin/zookeeper-server-start.sh -daemon /opt/kafka/config/zookeeper-sasl.properties
+KAFKA_OPTS="-Djava.security.auth.login.config=/opt/kafka/private/kafka_server_jaas.conf" /opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/server-acl.properties
+
+3) Примеры
+
+kafka-topics.sh --list --bootstrap-server localhost:9094 --command-config client-sasl.properties
+
+kafka-acls.sh --bootstrap-server localhost:9094 --list --command-config client-sasl.properties
+kafka-acls.sh --bootstrap-server localhost:9094 --add --allow-principal User:Bob --operation Write --topic test --command-config client-sasl.properties
+kafka-acls.sh --bootstrap-server localhost:9094 --add --allow-principal User:Alice --operation Read --topic test --command-config client-sasl.properties
+kafka-acls.sh --bootstrap-server localhost:9094 --list --command-config client-sasl.properties
+
+kafka-topics.sh --list --bootstrap-server localhost:9094 --command-config client-sasl.properties
+kafka-topics.sh --list --bootstrap-server localhost:9094 --command-config client-bob.properties
+kafka-topics.sh --list --bootstrap-server localhost:9094 --command-config client-alice.properties
+
+kafka-console-producer.sh --bootstrap-server localhost:9094 --topic test --producer.config client-bob.properties
+kafka-console-consumer.sh --bootstrap-server localhost:9094 --topic test --consumer.config client-alice.properties -from-beginning
+kafka-console-consumer.sh --bootstrap-server localhost:9094 --topic test --consumer.config client-sasl.properties -from-beginning
+
+kafka-server-stop.sh
+zookeeper-server-stop.sh

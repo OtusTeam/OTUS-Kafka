@@ -1,0 +1,73 @@
+1) JMX
+1.1) Запуск
+    cd /opt/kafka
+    JMX_PORT=9101 bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
+    JMX_PORT=9102 bin/kafka-server-start.sh -daemon config/server.properties
+    
+1.2) JConsole
+    jconsole
+
+1.3) ZooKeeper AdminServer
+    curl http://localhost:8080/commands
+    curl http://localhost:8080/commands/stats    
+    curl http://localhost:8080/commands/monitor
+
+1.4) Нагружаем Kafka
+    kafka-topics.sh --create --topic test --bootstrap-server localhost:9092
+    kafka-producer-perf-test.sh --topic test --num-records 1000000 --record-size 100 --throughput -1 --producer-props bootstrap.servers=localhost:9092
+
+1.5) Останавливаем
+    bin/kafka-server-stop.sh
+    bin/zookeeper-server-stop.sh
+
+
+2) Prometheus + Grafana
+2.1) Запуск
+    cd Demo2
+    docker-compose up -d
+
+2.2) Проверям Kafka exporter
+    curl -s localhost:9308/metrics | grep kafka
+
+2.3) Проверяем JMX exporter
+    curl -s localhost:9141/metrics | grep jvm
+    curl -s localhost:9141/metrics | grep kafka
+
+2.4) Проверяем Prometheus
+    Открываем http://localhost:9090
+    Prometheus -> Status -> Target
+
+2.5) Grafana
+    Открывыаем http://localhost:3000 (admin/admin)
+    Добавляем источник: Data sources -> Prometheus -> http://prometheus:9090
+    Импортируем дашборд: Dashboards -> New -> Import:
+        -> https://grafana.com/grafana/dashboards/7589
+        -> https://grafana.com/grafana/dashboards/721
+
+2.6) Нагружаем Kafka
+    kafka-topics.sh --create --topic test --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --partitions 3 --replication-factor 3
+    kafka-producer-perf-test.sh --topic test --num-records 1000000 --record-size 100 --throughput -1 --producer-props bootstrap.servers=localhost:9092,localhost:9093,localhost:9094
+
+2.7) Останавливаем
+    docker-compose stop
+    docker container prune -f
+    docker volume prune -f
+
+
+3) Kpow
+3.1) Запуск
+    cd kpow-local
+    docker-compose up -d
+
+3.2) Web
+    Открываем http://localhost:3000
+
+3.3) Нагружаем Kafka
+    kafka-topics.sh --create --topic test --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --partitions 3 --replication-factor 3
+    kafka-producer-perf-test.sh --topic test --num-records 1000000 --record-size 100 --throughput -1 --producer-props bootstrap.servers=localhost:9092,localhost:9093,localhost:9094
+    kafka-consumer-perf-test.sh --topic test --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --messages 1000000
+    
+3.4) Останавливаем
+    docker-compose stop
+    docker container prune -f
+    docker volume prune -f

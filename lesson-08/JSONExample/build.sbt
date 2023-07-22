@@ -19,9 +19,9 @@ ThisBuild / libraryDependencies ++= Seq(
 )
 
 lazy val root = (project in file("."))
-  .settings(name := "Consumer")
-  .settings(assembly / mainClass := Some("ru.example.kafka.consumer.Consumer"))
-  .settings(assembly / assemblyJarName := "consumer.jar")
+  .settings(name := "Producer")
+  .settings(assembly / mainClass := Some("ru.example.kafka.producer.Producer"))
+  .settings(assembly / assemblyJarName := "producer.jar")
   .settings(assembly / assemblyMergeStrategy := {
     case m if m.toLowerCase.endsWith("manifest.mf")       => MergeStrategy.discard
     case m if m.toLowerCase.matches("meta-inf.*\\.sf$")   => MergeStrategy.discard
@@ -31,3 +31,4 @@ lazy val root = (project in file("."))
     case x: String if x.contains("UnusedStubClass.class") => MergeStrategy.first
     case _                                                => MergeStrategy.first
   })
+  

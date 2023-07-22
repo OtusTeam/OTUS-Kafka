@@ -1,0 +1,28 @@
+global:
+  scrape_interval:     30s
+  evaluation_interval: 30s
+# Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: 'prometheus-swarm'
+rule_files:
+  - "alert.rules_nodes"
+  - "alert.rules_tasks"
+  - "alert.rules_service-groups"
+scrape_configs:
+  - job_name: 'prometheus'
+    dns_sd_configs:
+    - names:
+      - 'tasks.prometheus'
+      type: 'A'
+      port: 9090
+  - job_name: 'kafka-exporter'
+    static_configs:
+    - targets:
+      - kafka_exporter:9308
+  - job_name: 'jmx-exporter'
+    static_configs:
+    - targets:
+      - kafka1:9141
+      - kafka2:9142
+      - kafka3:9143
