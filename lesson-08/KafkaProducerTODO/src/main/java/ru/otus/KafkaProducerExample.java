@@ -18,8 +18,8 @@ public class KafkaProducerExample {
         Properties props = new Properties();
 
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, <TODO>);
-        props.put("key.Serializer", <TODO>);
-        props.put("value.Serializer", <TODO>);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, <TODO>);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, <TODO>);
 
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
 
