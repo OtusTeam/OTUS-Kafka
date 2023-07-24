@@ -18,8 +18,8 @@ public class KafkaProducerExample {
         Properties props = new Properties();
 
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "broker1:9092,broker2:9092");
-        props.put("key.Serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.Serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
 
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
 
