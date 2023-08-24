@@ -17,12 +17,12 @@ docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19
 
 6) Создадим таблицу в PostgreSQL и запишем в неё данные
 docker exec -ti postgres psql -U postgres
-postgres=# CREATE TABLE titles (id SERIAL PRIMARY KEY, title VARCHAR(120));
-postgres=# INSERT INTO titles (title) values ('Stranger Things');
-postgres=# INSERT INTO titles (title) values ('Black Mirror');
-postgres=# INSERT INTO titles (title) values ('The Office');
-postgres=# SELECT * FROM titles;
-postgres=# \q
+CREATE TABLE titles (id SERIAL PRIMARY KEY, title VARCHAR(120));
+INSERT INTO titles (title) values ('Stranger Things');
+INSERT INTO titles (title) values ('Black Mirror');
+INSERT INTO titles (title) values ('The Office');
+SELECT * FROM titles;
+\q
 
 7) Запускаем ksqlDB CLI
 docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
