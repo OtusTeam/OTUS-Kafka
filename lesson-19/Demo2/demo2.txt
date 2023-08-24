@@ -1,8 +1,8 @@
 1) Запускаем сервисы
-docker-compose up -d
+docker compose up -d
 
 2) Проверяем контейнеры
-docker-compose ps -a
+docker compose ps -a
 
 3) Проверям логи Kafka Connect
 docker logs -f connect
@@ -17,14 +17,12 @@ docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19
 
 6) Создадим таблицу в PostgreSQL и запишем в неё данные
 docker exec -ti postgres psql -U postgres
-  CREATE TABLE titles (id SERIAL PRIMARY KEY, title VARCHAR(120));
-
-  INSERT INTO titles (title) values ('Stranger Things');
-  INSERT INTO titles (title) values ('Black Mirror');
-  INSERT INTO titles (title) values ('The Office');
-
-  SELECT * FROM titles;
-  \q
+postgres=# CREATE TABLE titles (id SERIAL PRIMARY KEY, title VARCHAR(120));
+postgres=# INSERT INTO titles (title) values ('Stranger Things');
+postgres=# INSERT INTO titles (title) values ('Black Mirror');
+postgres=# INSERT INTO titles (title) values ('The Office');
+postgres=# SELECT * FROM titles;
+postgres=# \q
 
 7) Запускаем ksqlDB CLI
 docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
@@ -56,9 +54,9 @@ PRINT `postgres.titles` FROM BEGINNING;
 
 14) Удаляем коннектор
 DROP CONNECTOR `postgres-source`;
-^C
+^D
 
 15) Завершаем работу
-docker-compose stop
+docker compose stop
 docker container prune -f
 docker volume prune -f

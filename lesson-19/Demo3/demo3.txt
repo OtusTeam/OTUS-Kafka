@@ -1,8 +1,8 @@
 1) Запускаем сервисы
-docker-compose up -d
+docker compose up -d
 
 2) Проверяем контейнеры
-docker-compose ps -a
+docker compose ps -a
 
 3) Проверям логи Kafka Connect
 docker logs -f connect
@@ -58,6 +58,7 @@ SHOW TOPICS;
 
 13) Выведем содержимое топика
 PRINT `postgres.public.customers` FROM BEGINNING;
+^C
 
 14) Создаём поток
 CREATE STREAM customers WITH (
@@ -82,6 +83,6 @@ DROP CONNECTOR `customers_source`;
 ^D
 
 18) Завершаем работу
-docker-compose stop
+docker compose stop
 docker container prune -f
 docker volume prune -f
