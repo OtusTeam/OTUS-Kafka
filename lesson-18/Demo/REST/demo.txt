@@ -1,0 +1,4 @@
+REST API
+
+docker run --rm -p 80:8080 -e SWAGGER_JSON_URL=https://kafka.apache.org/35/generated/connect_rest.yaml swaggerapi/swagger-ui
+Открыть в броузере http://localhost
