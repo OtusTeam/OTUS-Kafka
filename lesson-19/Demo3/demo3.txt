@@ -18,13 +18,13 @@ docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19
 6) Создадим таблицу в PostgreSQL и запишем в неё данные
 docker exec -ti postgres psql -U postgres
 CREATE TABLE customers (id TEXT PRIMARY KEY, name TEXT, age INT);
-INSERT INTO customers (id, name, age) VALUES ('5', 'fred', 34);
-INSERT INTO customers (id, name, age) VALUES ('7', 'sue', 25);
-INSERT INTO customers (id, name, age) VALUES ('2', 'bill', 51);
+INSERT INTO customers (id, name, age) VALUES ('5', 'Fred', 34);
+INSERT INTO customers (id, name, age) VALUES ('7', 'Sue', 25);
+INSERT INTO customers (id, name, age) VALUES ('2', 'Bill', 51);
 SELECT * FROM customers;
 \q
 
-7) Запускаем ksqlDB CLI
+7) Запускаем ksqlDB CLI в первом терминале
 docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
 
 8) Устанавливаем чтение с начала темы
@@ -44,7 +44,9 @@ CREATE SOURCE CONNECTOR `customers_source` WITH (
     'transforms' = 'unwrap',
     'transforms.unwrap.type' = 'io.debezium.transforms.ExtractNewRecordState',
     'transforms.unwrap.drop.tombstones' = 'false',
-    'transforms.unwrap.delete.handling.mode' = 'rewrite'
+    'transforms.unwrap.delete.handling.mode' = 'rewrite',
+    'plugin.name' = 'pgoutput',
+    'tasks.max' = '1'
 );
 
 10) Выводим список коннекторов
@@ -61,12 +63,20 @@ PRINT `postgres.public.customers` FROM BEGINNING;
 ^C
 
 14) Создаём поток
-CREATE STREAM customers WITH (
-    kafka_topic = 'postgres.public.customers',
-    value_format = 'avro'
-);
+CREATE STREAM customers WITH (kafka_topic = 'postgres.public.customers', value_format = 'avro');
 
-15) Создаём таблицу
+15) Выведем содержимое потока
+SELECT * FROM customers EMIT CHANGES;
+
+16) Обновляем записи в таблице во втором терминале
+docker exec -ti postgres psql -U postgres
+INSERT INTO customers (id, name, age) VALUES ('3', 'Ann', 18);
+UPDATE customers set age = 35 WHERE id = '5';
+DELETE FROM customers WHERE id = '2';
+\q
+
+17) Создаём таблицу в первом терминале
+^C
 CREATE TABLE customers_by_key AS
     SELECT id,
            latest_by_offset(name) AS name,
@@ -75,14 +85,14 @@ CREATE TABLE customers_by_key AS
     GROUP BY id
     EMIT CHANGES;
 
-16) Создаём запрос
+18) Создадим запрос к таблице
 SELECT * FROM customers_by_key;
 
-17) Удаляем коннектор
+19) Удаляем коннектор
 DROP CONNECTOR `customers_source`;
 ^D
 
-18) Завершаем работу
+20) Завершаем работу
 docker compose stop
 docker container prune -f
 docker volume prune -f
