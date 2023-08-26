@@ -34,10 +34,10 @@ curl http://localhost:8083/connectors | jq
 curl http://localhost:8083/connectors/customers-connector | jq
 
 9) Проверяем топики
-kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
 
 10) Читаем топик postgres.public.customers в первом терминале
-kafka-console-consumer.sh --topic postgres.public.customers --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --property print.offset=true --property print.key=true --from-beginning
+docker exec kafka1 kafka-console-consumer --topic postgres.public.customers --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --property print.offset=true --property print.key=true --from-beginning
 
 11) Обновляем записи в таблице во втором терминале
 docker exec -ti -e PGOPTIONS="--search_path=inventory" postgres psql -U postgres

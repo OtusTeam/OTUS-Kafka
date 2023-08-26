@@ -13,7 +13,7 @@ curl http://localhost:8083 | jq
 curl http://localhost:8083/connector-plugins | jq
 
 4) Проверяем топики
-kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
 
 5) Проверяем конфигурацию коннектора
 curl -X PUT -d '{"connector.class":"JdbcSource"}' -H "Content-Type: application/json" http://localhost:8083/connector-plugins/JdbcSourceConnector/config/validate | jq
@@ -33,13 +33,13 @@ curl http://localhost:8083/connectors | jq
 curl http://localhost:8083/connectors/clients-connector | jq
 
 9) Проверяем топики
-kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
 
 10) Проверим смещение в топике postgres.clients
-kafka-get-offsets.sh --topic postgres.clients --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+docker exec kafka1 kafka-get-offsets --topic postgres.clients --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
 
 11) Читаем топик postgres.clients в первом терминале
-kafka-console-consumer.sh --topic postgres.clients --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --from-beginning --property print.offset=true
+docker exec kafka1 kafka-console-consumer --topic postgres.clients --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --property print.offset=true
 
 12) Подключаемся к базе и обновляем данные во втором терминале
 docker exec -ti postgres psql -U postgres

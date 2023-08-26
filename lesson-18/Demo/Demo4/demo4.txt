@@ -25,10 +25,10 @@ curl http://localhost:8083/connectors | jq
 curl http://localhost:8083/connectors/inventory-connector | jq
 
 7) Проверяем топики
-kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
 
 8) Читаем топик dbserver1.inventory.customers в первом терминале
-kafka-console-consumer.sh --topic postgres.inventory.customers --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --from-beginning --property print.offset=true
+docker exec kafka1 kafka-console-consumer --topic postgres.inventory.customers --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --property print.offset=true
 
 9) Обновляем запись в таблице во втором терминале
 docker exec -ti -e PGOPTIONS="--search_path=inventory" postgres psql -U postgres

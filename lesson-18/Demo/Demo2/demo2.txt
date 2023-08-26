@@ -13,9 +13,9 @@ curl http://localhost:8083 | jq
 curl http://localhost:8083/connector-plugins | jq
 
 4) Создаём топик data
-kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
-kafka-topics.sh --create --topic data --bootstrap-server localhost:9092,localhost:9093,localhost:9094
-kafka-topics.sh --list --bootstrap-server localhost:9092,localhost:9093,localhost:9094
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+docker exec kafka1 kafka-topics --create --topic data --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
 
 5) Создаём коннектор load-kafka
 curl -X POST --data-binary "@source.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
@@ -25,7 +25,7 @@ curl http://localhost:8083/connectors | jq
 curl http://localhost:8083/connectors/load-kafka | jq
 
 7) Читаем топик data
-kafka-console-consumer.sh --topic data --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --from-beginning
+docker exec kafka1 kafka-console-consumer --topic data --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning
 
 8) Создаём коннектор dump-kafka
 curl -X POST --data-binary "@dump.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
