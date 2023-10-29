@@ -1,0 +1,49 @@
+Демо 2. Файловые источник и приёмник
+
+1) Запускаем Kafka и Kafka Connect
+docker compose up -d
+docker compose ps -a
+
+2) Подключаемся к логам Connect
+- docker logs -f connect
+^C
+
+3) Проверяем статус и плагины коннекторов
+curl http://localhost:8083 | jq
+curl http://localhost:8083/connector-plugins | jq
+
+4) Создаём топик data
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+docker exec kafka1 kafka-topics --create --topic data --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+
+5) Создаём коннектор load-kafka
+curl -X POST --data-binary "@source.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+6) Проверяем коннектор load-kafka
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/load-kafka | jq
+
+7) Читаем топик data
+docker exec kafka1 kafka-console-consumer --topic data --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning
+
+8) Создаём коннектор dump-kafka
+curl -X POST --data-binary "@dump.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+9) Проверяем коннектор dump-kafka
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/dump-kafka | jq
+
+10) Проверяем выгрузку данных из топика в файл
+docker exec connect ls -la /data
+docker exec connect diff /data/source.csv /data/dump.csv
+
+11) Удаляем коннекторы
+curl -X DELETE http://localhost:8083/connectors/dump-kafka
+curl -X DELETE http://localhost:8083/connectors/load-kafka
+curl http://localhost:8083/connectors | jq
+
+12) Останавливаем Kafka и Kafka Connect
+docker compose stop
+docker container prune -f
+docker volume prune -f

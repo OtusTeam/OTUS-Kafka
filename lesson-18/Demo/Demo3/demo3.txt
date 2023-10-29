@@ -1,0 +1,55 @@
+Демо 3. PostgreSQL
+
+1) Запускаем Kafka и Kafka Connect
+docker compose up -d
+docker compose ps -a
+
+2) Подключаемся к логам Connect
+docker logs -f connect
+^C
+
+3) Проверяем статус и плагины коннекторов
+curl http://localhost:8083 | jq
+curl http://localhost:8083/connector-plugins | jq
+
+4) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+
+5) Проверяем конфигурацию коннектора
+curl -X PUT -d '{"connector.class":"JdbcSource"}' -H "Content-Type: application/json" http://localhost:8083/connector-plugins/JdbcSourceConnector/config/validate | jq
+
+6) Подключаемся к базе и загружаем данные
+docker exec -ti postgres psql -U postgres
+CREATE TABLE clients (id int PRIMARY KEY, first_name text, last_name text, gender text, card_number text, bill numeric(7,2), created_date timestamp, modified_date timestamp);
+COPY clients FROM '/data/Demo.csv' WITH (FORMAT csv, HEADER true);
+SELECT * FROM clients LIMIT 5;
+\q
+
+7) Создаём коннектор clients-connector
+curl -X POST --data-binary "@clients.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+8) Проверяем коннектор inventory-connector
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/clients-connector | jq
+
+9) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+
+10) Проверим смещение в топике postgres.clients
+docker exec kafka1 kafka-get-offsets --topic postgres.clients --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+
+11) Читаем топик postgres.clients в первом терминале
+docker exec kafka1 kafka-console-consumer --topic postgres.clients --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --property print.offset=true
+
+12) Подключаемся к базе и обновляем данные во втором терминале
+docker exec -ti postgres psql -U postgres
+UPDATE clients SET bill = 5000, modified_date = current_timestamp(0)  WHERE id = 262;
+\q
+
+13) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/clients-connector
+
+14) Останавливаем Kafka и Kafka Connect
+docker compose stop
+docker container prune -f
+docker volume prune -f

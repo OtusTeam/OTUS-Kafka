@@ -1,0 +1,45 @@
+Демо 4. PostgreSQL CDC
+
+1) Запускаем Kafka и Kafka Connect
+docker compose up -d
+docker compose ps -a
+
+2) Подключаемся к логам Connect
+docker logs -f connect
+^C
+
+3) Подключаемся к базе
+docker exec -ti -e PGOPTIONS="--search_path=inventory" postgres psql -U postgres
+SELECT * FROM customers;
+\q
+
+4) Проверяем статус и плагины коннекторов
+curl http://localhost:8083 | jq
+curl http://localhost:8083/connector-plugins | jq
+
+5) Создаём коннектор inventory-connector
+curl -X POST --data-binary "@inventory.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+6) Проверяем коннектор inventory-connector
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/inventory-connector | jq
+
+7) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+
+8) Читаем топик dbserver1.inventory.customers в первом терминале
+docker exec kafka1 kafka-console-consumer --topic postgres.inventory.customers --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --property print.offset=true
+
+9) Обновляем запись в таблице во втором терминале
+docker exec -ti -e PGOPTIONS="--search_path=inventory" postgres psql -U postgres
+UPDATE customers SET first_name = 'Sarah' WHERE id = 1001;
+SELECT * FROM customers;
+\q
+
+10) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/inventory-connector
+
+11) Останавливаем Kafka и Kafka Connect
+docker compose stop
+docker container prune -f
+docker volume prune -f

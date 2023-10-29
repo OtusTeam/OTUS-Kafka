@@ -1,0 +1,37 @@
+Демо 1. Запускаем Kafka Connect
+
+1) Запускаем Kafka
+cd /opt/kafka
+bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
+bin/kafka-server-start.sh -daemon config/server.properties
+
+2) Запускаем Kafka Connect
+bin/connect-distributed.sh -daemon config/connect-distributed.properties
+
+3) Проверяем статус и плагины коннекторов
+curl http://localhost:8083 | jq
+curl http://localhost:8083/connector-plugins | jq
+
+4) Останавливаем Kafka Connect
+kill $(jps | grep ConnectDistributed | awk '{ print $1 }')
+
+5) Создаём папку для плагинов
+mkdir -p /opt/kafka/plugins
+
+6) Копируем файловый плагин-коннектор в эту папку
+cp /opt/kafka/libs/connect-file-3.4.0.jar /opt/kafka/plugins
+
+7) Пропишем папку для плагинов в конфигурационный файл Kafka Connect
+cp config/connect-distributed.properties config/connect-distributed-p.properties
+vi config/connect-distributed-p.properties
+
+8) Запускаем Kafka Connect
+bin/connect-distributed.sh -daemon config/connect-distributed-p.properties
+
+9) Проверяем плагины коннекторов
+curl http://localhost:8083/connector-plugins | jq
+
+10) Останавливаем Kafka и Kafka Connect
+kill $(jps | grep ConnectDistributed | awk '{ print $1 }')
+bin/kafka-server-stop.sh
+bin/zookeeper-server-stop.sh

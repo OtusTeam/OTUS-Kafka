@@ -1,5 +1,5 @@
 1) Запускаем сервисы
-docker-compose up -d
+docker compose up -d
 
 2) Создаём топик users
 docker exec broker kafka-topics --create --topic users --bootstrap-server broker:9092
@@ -20,10 +20,10 @@ SHOW TOPICS;
 CREATE STREAM users (ROWKEY INT KEY, USERNAME VARCHAR) WITH (KAFKA_TOPIC='users', VALUE_FORMAT='JSON');
 
 8) Работа с потоками
-{ LIST | SHOW } STREAMS;
+SHOW STREAMS;
 SHOW STREAMS EXTENDED;
 DESCRIBE users;
-DESCRIBE EXTENDED users;
+DESCRIBE users EXTENDED;
 
 9) Добавим записи в поток
 INSERT INTO users (username) VALUES ('Alex');
@@ -39,15 +39,17 @@ SELECT 'Hello, ' + USERNAME AS GREETING FROM users EMIT CHANGES;
 
 12) Добавим записи в поток во втором терминале
 docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
+SET 'auto.offset.reset' = 'earliest';
 INSERT INTO users (username) VALUES ('Mary');
 INSERT INTO users (username) VALUES ('Garry');
 INSERT INTO users (username) VALUES ('Ann');
 
-13) Посмотрим на метаданные
+13) Посмотрим на метаданные в первом терминале
+^C
 SELECT ROWTIME, ROWOFFSET, ROWPARTITION, * FROM users EMIT CHANGES;
 
-14) Работа с запросами
-{ LIST | SHOW } QUERIES;
+14) Работа с запросами во втором терминале
+LIST QUERIES;
 SHOW QUERIES EXTENDED;
 EXPLAIN { идентификатор_запроса };
 
@@ -59,6 +61,6 @@ DESCRIBE FUNCTION <идентификатор>;
 TERMINATE ALL;
 
 17) Завершаем работу
-docker-compose stop
+docker compose stop
 docker container prune -f
 docker volume prune -f

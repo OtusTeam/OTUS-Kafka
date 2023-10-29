@@ -18,7 +18,7 @@ import ru.otus.utils.Utils;
 
 public class Ex4Reward {
     public static void main(String[] args) throws Exception {
-        Utils.recreatePurchaseTopics(2); // **1
+        Utils.recreatePurchaseTopics(1); // **1
 
         var purchaseSerde = AppSerdes.purchase();
         var rewardAccumulatorSerde = AppSerdes.rewardAccumulator();
@@ -33,7 +33,7 @@ public class Ex4Reward {
                 .stream("purchase-topic", Consumed.with(stringSerde, purchaseSerde))
                 .mapValues(p -> p.toBuilder().maskCreditCard().build())
                 .peek((k, p) -> Utils.log.info("Purchase: {}", p))
-                ///* **2
+                /* **2
                 .selectKey((k, v) -> "some-not-null") // почему-то без ключа сообщения не уходят :(
                 .repartition(Repartitioned.with(stringSerde, purchaseSerde).withStreamPartitioner(new RewardPartitioner()))
                  // */

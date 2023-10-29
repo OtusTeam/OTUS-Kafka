@@ -1,0 +1,55 @@
+Демо 6. PostgreSQL CDC (ворой вариант)
+
+1) Запускаем сервисы
+docker compose up -d
+
+2) Проверяем контейнеры
+docker compose ps -a
+
+3) Проверям логи Kafka Connect
+docker logs -f connect
+^C
+
+4) Проверяем статус и плагины коннекторов
+curl http://localhost:8083 | jq
+curl http://localhost:8083/connector-plugins | jq
+
+5) Проверяем список топиков
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+
+6) Создадим таблицу в PostgreSQL и запишем в неё данные
+docker exec -ti postgres psql -U postgres
+CREATE TABLE customers (id INT PRIMARY KEY, name TEXT, age INT);
+INSERT INTO customers (id, name, age) VALUES (5, 'Fred', 34);
+INSERT INTO customers (id, name, age) VALUES (7, 'Sue', 25);
+INSERT INTO customers (id, name, age) VALUES (2, 'Bill', 51);
+SELECT * FROM customers;
+\q
+
+7) Создаём коннектор customers-connector
+curl -X POST --data-binary "@customers.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+8) Проверяем коннектор customers-connector
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/customers-connector | jq
+
+9) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+
+10) Читаем топик postgres.public.customers в первом терминале
+docker exec kafka1 kafka-console-consumer --topic postgres.public.customers --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --property print.offset=true --property print.key=true --from-beginning
+
+11) Обновляем записи в таблице во втором терминале
+docker exec -ti postgres psql -U postgres
+INSERT INTO customers (id, name, age) VALUES (3, 'Ann', 18);
+UPDATE customers set age = 35 WHERE id = 5;
+DELETE FROM customers WHERE id = 2;
+\q
+
+12) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/inventory-connector
+
+13) Останавливаем Kafka и Kafka Connect
+docker compose stop
+docker container prune -f
+docker volume prune -f
