@@ -60,8 +60,9 @@ kafka-console-consumer.sh --topic test --bootstrap-server kafka1:9092,kafka2:909
 
 3.7) Посмотрим на содержимое журнала на брокере 1 (номер партиции с данными может быть другим)
 ssh kafka1
-    bin/kafka-dump-log.sh --files data/kafka-logs/test-2/00000000000000000000.log
-    bin/kafka-dump-log.sh --print-data-log --files data/kafka-logs/test-2/00000000000000000000.log
+    cd data/kafka-logs/test-2
+    kafka-dump-log.sh --files 00000000000000000000.log
+    kafka-dump-log.sh --print-data-log --files 00000000000000000000.log
 
 3.8) Удалим сообщения из топика test
 kafka-delete-records.sh --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --offset-json-file deleteme.json
