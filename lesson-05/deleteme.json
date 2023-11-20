@@ -1,5 +1,5 @@
 {"partitions":
-	[{"topic": "test", "partition": 2,
-	"offset": 90}],
+	[{"topic": "test", "partition": 0,
+	"offset": 900}],
 	"version":1
 }
