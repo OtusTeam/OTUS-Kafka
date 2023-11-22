@@ -11,85 +11,84 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
-  kafka1:
+  kafka-1:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka1
-    hostname: kafka1
+    container_name: kafka-1
+    hostname: kafka-1
     ports:
       - "9092:9092"
-      - "9141:9141"
+      - "7071:7071"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka1:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
       KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
-      KAFKA_OPTS: "-javaagent:/opt/kafka/prometheus/jmx_prometheus_javaagent-0.19.0.jar=9141:/opt/kafka/prometheus/kafka-2_0_0.yml"
+      KAFKA_JMX_HOSTNAME: kafka-1
+      EXTRA_ARGS: "-javaagent:/opt/kafka/jmx_javaagent/jmx_prometheus_javaagent-0.20.0.jar=7071:/opt/kafka/jmx_javaagent/kafka-2_0_0.yml"
     volumes:
-      - ./prometheus:/opt/kafka/prometheus
+      - ./jmx_exporter:/opt/kafka/jmx_javaagent
     depends_on:
       - zookeeper
 
-  kafka2:
+  kafka-2:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka2
-    hostname: kafka2
+    container_name: kafka-2
+    hostname: kafka-2
     ports:
       - "9093:9093"
-      - "9142:9142"
+      - "7072:7071"
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka2:19093,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9093
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://:19093,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
       KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
-      KAFKA_OPTS: "-javaagent:/opt/kafka/prometheus/jmx_prometheus_javaagent-0.19.0.jar=9142:/opt/kafka/prometheus/kafka-2_0_0.yml"
+      KAFKA_JMX_HOSTNAME: kafka-2
+      EXTRA_ARGS: "-javaagent:/opt/kafka/jmx_javaagent/jmx_prometheus_javaagent-0.20.0.jar=7071:/opt/kafka/jmx_javaagent/kafka-2_0_0.yml"
     volumes:
-      - ./prometheus:/opt/kafka/prometheus
+      - ./jmx_exporter:/opt/kafka/jmx_javaagent
     depends_on:
       - zookeeper
 
-  kafka3:
+  kafka-3:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka3
-    hostname: kafka3
+    container_name: kafka-3
+    hostname: kafka-3
     ports:
       - "9094:9094"
-      - "9143:9143"
+      - "7073:7071"
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka3:19094,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9094
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://:19094,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
       KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
-      KAFKA_OPTS: "-javaagent:/opt/kafka/prometheus/jmx_prometheus_javaagent-0.19.0.jar=9143:/opt/kafka/prometheus/kafka-2_0_0.yml"
+      KAFKA_JMX_HOSTNAME: kafka-3
+      EXTRA_ARGS: "-javaagent:/opt/kafka/jmx_javaagent/jmx_prometheus_javaagent-0.20.0.jar=7071:/opt/kafka/jmx_javaagent/kafka-2_0_0.yml"
     volumes:
-      - ./prometheus:/opt/kafka/prometheus
+      - ./jmx_exporter:/opt/kafka/jmx_javaagent
     depends_on:
       - zookeeper
 
-  kafka_exporter:
+  kafka-exporter:
     image: danielqsj/kafka-exporter
-    container_name: kafka_exporter
-    hostname: kafka_exporter
+    container_name: exporter
+    hostname: exporter
     ports:
       - "9308:9308"
-    command: "--kafka.server=kafka1:19092 --kafka.server=kafka2:19093 --kafka.server=kafka3:19094"
-    deploy:
-      mode: replicated
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M      
-      replicas: 1
-      endpoint_mode: vip
+    command: ["--kafka.server=kafka-1:19092", "--kafka.server=kafka-2:19093", "--kafka.server=kafka-3:19094"]
+    depends_on:
+      - zookeeper
+      - kafka-1
+      - kafka-2
+      - kafka-3
 
   prometheus:
     image: prom/prometheus
@@ -98,22 +97,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus:/prometheus
-    secrets:
-      - prometheus.yml
-    command: --config.file=/run/secrets/prometheus.yml --storage.tsdb.path=/prometheus --storage.tsdb.retention=168h
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 4096M
-        reservations:
-          memory: 1024M
-      replicas: 1
-      endpoint_mode: vip
-      placement:
-        constraints:
-           - "node.labels.prometheus == true"
+      - ./prometheus:/etc/prometheus
 
   grafana:
     image: grafana/grafana
@@ -122,20 +106,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./grafana:/var/lib/grafana
-    deploy:
-      mode: replicated
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 128M
-      replicas: 1
-      endpoint_mode: vip
-      placement:
-        constraints:
-           - "node.labels.grafana == true"
+      - grafana-data:/var/lib/grafana
 
-secrets:
-  prometheus.yml:
-    file: prometheus.yml
+volumes:
+  grafana-data:

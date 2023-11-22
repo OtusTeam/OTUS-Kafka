@@ -1,0 +1,12 @@
+global:
+  scrape_interval:     10s
+  evaluation_interval: 10s
+rule_files:
+  - "kafka-rules.yml"
+scrape_configs:
+  - job_name: "jmx-exporter"
+    static_configs:
+      - targets: ["kafka-1:7071","kafka-2:7071","kafka-3:7071"]
+  - job_name: "kafka-exporter"
+    static_configs:
+      - targets: ["exporter:9308"]

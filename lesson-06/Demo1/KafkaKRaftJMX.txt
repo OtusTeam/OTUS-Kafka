@@ -15,5 +15,5 @@ docker run -d \
 -e KAFKA_INTER_BROKER_LISTENER_NAME='PLAINTEXT' \
 -e KAFKA_CONTROLLER_LISTENER_NAMES='CONTROLLER' \
 -e CLUSTER_ID='MkU3OEVBNTcwNTJENDM2Qk' \
-confluentinc/cp-kafka:7.4.1
+confluentinc/cp-kafka:latest
 
