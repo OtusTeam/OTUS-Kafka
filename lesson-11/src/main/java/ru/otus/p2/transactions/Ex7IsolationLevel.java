@@ -23,26 +23,28 @@ public class Ex7IsolationLevel {
             Utils.log.info("beginTransaction");
             producerTransactional.beginTransaction();
             Thread.sleep(500);
-            producer.send(new ProducerRecord<>("topic1", "0"));
+            producer.send(new ProducerRecord<>("topic1", "0")); // вне транзакции - оба получат
 
             Thread.sleep(500);
-            producerTransactional.send(new ProducerRecord<>("topic1", "1"));
+            producerTransactional.send(new ProducerRecord<>("topic1", "1")); // сразу получит только consumerRUnC
 
             Thread.sleep(500);
-            producer.send(new ProducerRecord<>("topic1", "2"));
+            producer.send(new ProducerRecord<>("topic1", "2")); // сразу получит только consumerRUnC, хотя вне транзакции
 
             Thread.sleep(500);
-            producerTransactional.send(new ProducerRecord<>("topic1", "3"));
+            producerTransactional.send(new ProducerRecord<>("topic1", "3")); // сразу получит только consumerRUnC
 
             Thread.sleep(500);
             Utils.log.info("commitTransaction");
-            producerTransactional.commitTransaction();
+            producerTransactional.commitTransaction(); // consumerRC получит 1,2,3
 
             producerTransactional.beginTransaction();
-            producerTransactional.send(new ProducerRecord<>("topic1", "4"));
+            producerTransactional.send(new ProducerRecord<>("topic1", "4")); // получит только consumerRUnC (abort)
             Thread.sleep(500);
             Utils.log.info("abortTransaction");
             producerTransactional.abortTransaction();
+
+            producer.send(new ProducerRecord<>("topic1", "END")); // получат оба
 
             Thread.sleep(1000);
         }
