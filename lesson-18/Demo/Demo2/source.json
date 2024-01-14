@@ -1,8 +1,0 @@
-{
-    "name":"load-kafka",
-    "config": {
-        "connector.class": "FileStreamSource",
-        "file": "/data/source.csv",
-        "topic": "data"
-    }
-}

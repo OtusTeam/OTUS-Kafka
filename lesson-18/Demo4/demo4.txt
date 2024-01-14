@@ -1,0 +1,68 @@
+Демо 3. JDBC Sink (PostgreSQL)
+
+1) Запускаем Kafka и Kafka Connect
+docker compose up -d
+docker compose ps -a
+
+2) Проверям логи Kafka Connect
+docker logs -f connect
+^C
+
+3) Проверяем статус и плагины коннекторов
+curl http://localhost:8083 | jq
+curl http://localhost:8083/connector-plugins | jq
+
+4) Подключаемся к базе и проверяем таблицы
+docker exec -ti postgres psql -U postgres
+\d
+\q
+
+5) Создаём топик customers
+docker exec kafka1 kafka-topics --create --topic customers --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+
+6) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+
+7) Запишем несколько сообщений в топик customers
+docker exec -ti kafka1 kafka-console-producer --topic customers --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"id"},{"type":"string","optional":false,"field":"name"}]},"payload":{"id":1,"name":"Jane Doe"}}
+{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"id"},{"type":"string","optional":false,"field":"name"}]},"payload":{"id":2,"name":"John Smith"}}
+{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"id"},{"type":"string","optional":false,"field":"name"}]},"payload":{"id":3,"name":"Ann Black"}}
+^D
+
+8) Проверим сообщения в топике customers
+docker exec -ti kafka1 kafka-console-consumer --topic customers --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --property print.offset=true
+^C
+
+9) Создаём коннектор customers-connector
+curl -X POST --data-binary "@customers.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+10) Проверяем коннектор cliecustomersnts-connector
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/customers-connector/status | jq
+
+11) Подключаемся к базе и проверяем таблицы
+docker exec -ti postgres psql -U postgres
+\d
+SELECT * FROM customers;
+\q
+
+12) Добавляем сообщения в топик customers
+docker exec -ti kafka1 kafka-console-producer --topic customers --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"id"},{"type":"string","optional":false,"field":"name"}]},"payload":{"id":4,"name":"Agatha Christie"}}
+{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"id"},{"type":"string","optional":false,"field":"name"}]},"payload":{"id":5,"name":"Arthur Conan Doyle"}}
+{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"id"},{"type":"string","optional":false,"field":"name"}]},"payload":{"id":6,"name":"Edgar Allan Poe"}}
+^D
+
+13) Подключаемся к базе и проверяем таблицу customers
+docker exec -ti postgres psql -U postgres
+SELECT * FROM customers;
+\q
+
+13) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/customers-connector
+
+14) Останавливаем Kafka и Kafka Connect
+docker compose stop
+docker container prune -f
+docker volume prune -f
