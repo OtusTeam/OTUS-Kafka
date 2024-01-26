@@ -11,6 +11,7 @@ services:
 
   schema-registry:
     image: confluentinc/cp-schema-registry:latest
+    container_name: schema-registry
     hostname: schema-registry
     depends_on:
       - kafka-broker-1
@@ -47,6 +48,19 @@ services:
       - schema-registry
     environment:
       KAFKA_REST_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_REST_DEBUG: true
       KAFKA_REST_SCHEMA_REGISTRY_URL: schema-registry:8081
       KAFKA_REST_HOST_NAME: kafka-rest
       KAFKA_REST_LISTENERS: http://kafka-rest:8082
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    container_name: kafdrop-otuskafka
+    restart: "no"
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka-broker-1:9092"
+      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+    depends_on:
+      - "kafka-broker-1"

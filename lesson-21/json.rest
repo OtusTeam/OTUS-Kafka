@@ -1,0 +1,72 @@
+// ЧТЕНИЕ И ЗАПИСЬ В ФОРМАТЕ STRING
+
+### Записать сообщение в формате JSON в топик jsontest
+POST http://localhost:8082/topics/jsontest
+Content-Type: application/vnd.kafka.json.v2+json
+
+{
+  "records": [
+    {
+      "value": {
+        "foo": 2
+      }
+    },
+    {
+      "value": {
+        "foo": 3
+      }
+    }
+  ]
+}
+
+### Создать Consumer JSON в группе "my_json_consumer_group", начать читать с начала топика.
+
+POST http://localhost:8082/consumers/my_json_consumer_group2
+Content-Type: application/vnd.kafka.v2+json
+
+{
+  "name": "my_consumer",
+  "format": "json",
+  "auto.offset.reset": "earliest"
+}
+
+
+### Подписаться на топик
+
+POST http://localhost:8082/consumers/my_json_consumer_group2/instances/my_consumer/subscription
+Content-Type: application/vnd.kafka.v2+json
+
+{
+  "topics": [
+    "jsontest"
+  ]
+}
+
+###
+GET http://localhost:8082/consumers/my_json_consumer_group2/instances/my_consumer/offsets
+Accept: application/vnd.kafka.json.v2+json
+
+### Получить данные
+
+GET http://localhost:8082/consumers/my_json_consumer_group2/instances/my_consumer/records
+Accept: application/vnd.kafka.json.v2+json
+
+
+### В начало
+
+POST http://localhost:8082/consumers/my_json_consumer_group2/instances/my_consumer/positions/beginning
+Content-Type: application/vnd.kafka.v2+json
+
+{
+  "partitions": [
+    {
+      "topic": "jsontest",
+      "partition": 0
+    }
+  ]
+}
+
+### Удалить Consumer, чтобы не занимать ресурсы
+
+DELETE http://localhost:8082/consumers/my_json_consumer_group2/instances/my_consumer
+Content-Type: application/vnd.kafka.v2+json
