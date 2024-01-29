@@ -1,0 +1,10 @@
+{"namespace": "ru.otus.model",
+  "type": "record",
+  "name": "User",
+  "fields": [
+    {"name": "name", "type": "string"},
+    // /*1*/ {"name": "email", "type": ["string", "null"]},
+    {"name": "favorite_number",  "type": ["int", "null"]},
+    {"name": "favorite_color", "type": ["string", "null"]}
+  ]
+}
