@@ -1,46 +1,31 @@
-Запуск контейнеров
+Запуск контейнера
 ```shell
 cd kafka
-docker compose up -d
-docker compose ps -a
+docker compose start
 ```
 
 Получить список топиков
 ```shell
-docker exec -ti kafka1 /usr/bin/kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
-```
-
-Создать топик topic1
-```shell
-docker exec -ti kafka1 /usr/bin/kafka-topics --create --topic topic1 --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+docker exec -ti kafka-otuskafka /usr/bin/kafka-topics --list --bootstrap-server localhost:9091
 ```
 
 Отправить сообщение
 ```shell
-docker exec -ti kafka1 /usr/bin/kafka-console-producer --topic topic1 --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+docker exec -ti kafka-otuskafka /usr/bin/kafka-console-producer --topic topic1 --bootstrap-server localhost:9091
 ```
-Каждая строка - одно сообщение. Прервать - Ctrl+D
+Каждая строка - одно сообщение. Прервать - Ctrl+Z
 
 Получить сообщения
 ```shell
-docker exec -ti kafka1 /usr/bin/kafka-console-consumer --from-beginning --topic topic1 --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 
+docker exec -ti kafka-otuskafka /usr/bin/kafka-console-consumer --from-beginning --topic topic1 --bootstrap-server localhost:9091 
 ```
-Прервать - Ctrl+C
+
+Получить сообщения как consumer1
+```shell
+docker exec -ti kafka-otuskafka /usr/bin/kafka-console-consumer --group consumer1 --topic topic1 --bootstrap-server localhost:9091 
+```
 
 Отправить сообщение c ключом через двоеточие (key:value)
 ```shell
-docker exec -ti kafka1 /usr/bin/kafka-console-producer --topic topic1 --property parse.key=true --property key.separator=: --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
-```
-
-Получить сообщения
-```shell
-docker exec -ti kafka1 /usr/bin/kafka-console-consumer --topic topic1 --property print.key=true --property print.offset=true --from-beginning --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
-```
-Прервать - Ctrl+C
-
-Останавливаем контейнеры
-```shell
-docker compose stop
-docker container prune -f
-docker volume prune -f
+docker exec -ti kafka-otuskafka /usr/bin/kafka-console-producer --topic topic1 --property "parse.key=true" --property "key.separator=:" --bootstrap-server localhost:9091
 ```

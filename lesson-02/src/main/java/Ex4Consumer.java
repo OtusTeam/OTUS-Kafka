@@ -31,7 +31,9 @@ public class Ex4Consumer {
             for (var record : result) {
                 Utils.log.warn("Message {}.{}: {} -> {}", record.topic(), record.partition(),
                     record.key(), record.value());
+
             }
+
         }
     }
 
