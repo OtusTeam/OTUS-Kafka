@@ -41,14 +41,29 @@ services:
       - "9091:9091"
       - "9101:9101"
 
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.5.3
+    hostname: schema-registry
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+      SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8081
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://localhost:19092
+      SCHEMA_REGISTRY_DEBUG: 'true'
+
   kafdrop:
-    image: obsidiandynamics/kafdrop:4.0.1
+    image: obsidiandynamics/kafdrop
     container_name: kafdrop-otuskafka
     restart: "no"
     ports:
       - "9000:9000"
     environment:
       KAFKA_BROKERCONNECT: "kafka:9092"
-      JVM_OPTS: "-XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+      CMD_ARGS: "--schemaregistry.connect=http://schema-registry:8081"
+      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
     depends_on:
       - "kafka"
