@@ -47,3 +47,6 @@ bin/
 **/target
 **/classes
 
+**/.clj-kondo
+**/.lsp/
+
