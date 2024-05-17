@@ -8,6 +8,7 @@ import ru.otus.model.purchase.PurchasePattern;
 import ru.otus.model.purchase.RewardAccumulator;
 import ru.otus.model.stock.FixedSizePriorityQueue;
 import ru.otus.model.stock.ShareVolume;
+import ru.otus.model.stock.StockPerformance;
 import ru.otus.model.stock.StockTickerData;
 import ru.otus.model.stock.StockTransaction;
 import ru.otus.model.stock.TransactionSummary;
@@ -42,6 +43,10 @@ public class AppSerdes {
 
     public static Serde<ShareVolume> shareVolume() {
         return serde(ShareVolume.class);
+    }
+
+    public static Serde<StockPerformance> stockPerformance() {
+        return serde(StockPerformance.class);
     }
 
     public static Serde<FixedSizePriorityQueue<ShareVolume>> fixedSizePriorityQueue() {

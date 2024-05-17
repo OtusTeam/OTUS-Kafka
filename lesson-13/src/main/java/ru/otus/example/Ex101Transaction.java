@@ -11,6 +11,8 @@ import org.apache.kafka.streams.kstream.Produced;
 import ru.otus.utils.Producer;
 import ru.otus.utils.Utils;
 
+import java.util.UUID;
+
 public class Ex101Transaction {
     public static void main(String[] args) throws Exception {
         Utils.recreateTopics(1, 1, "ex101-src-topic");
@@ -19,16 +21,16 @@ public class Ex101Transaction {
         var builder = new StreamsBuilder();
 
         var upperCasedStream = builder
-                .stream("ex1-src-topic", Consumed.with(stringSerde, stringSerde))
+                .stream("ex101-src-topic", Consumed.with(stringSerde, stringSerde))
                 .mapValues(it -> it.toUpperCase());
-        upperCasedStream.to("ex1-out-topic", Produced.with(stringSerde, stringSerde));
+        upperCasedStream.to("ex101-out-topic", Produced.with(stringSerde, stringSerde));
         upperCasedStream.print(Printed.<String, String>toSysOut().withLabel("Ex1 App"));
 
         Utils.log.info("{}", builder.build().describe());
 
         try (var kafkaStreams = new KafkaStreams(builder.build(),
                 Utils.createStreamsConfig(b -> {
-                    b.put(StreamsConfig.APPLICATION_ID_CONFIG, "ex11");
+                    b.put(StreamsConfig.APPLICATION_ID_CONFIG, "ex101" + UUID.randomUUID());
                     b.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE_V2);
                 }));
              var producer = new Producer("ex101-src-topic", b -> b.key("1").value("message-" + b.no), 500)) {
