@@ -32,7 +32,7 @@ curl -X POST --data-binary "@dump.json" -H "Content-Type: application/json" http
 
 9) Проверяем коннектор dump-kafka
 curl http://localhost:8083/connectors | jq
-curl http://localhost:8083/connectors/dump-kafka | jq
+curl http://localhost:8083/connectors/dump-kafka/status | jq
 
 10) Проверяем выгрузку данных из топика в файл
 docker exec connect ls -la /data
