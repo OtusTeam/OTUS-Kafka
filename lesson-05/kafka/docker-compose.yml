@@ -16,7 +16,7 @@ services:
 
   kafka1:
     image: confluentinc/cp-kafka:7.0.9
-    container_name: kafka-otuskafka
+    container_name: kafka1-otuskafka
     depends_on:
       zookeeper:
         condition: service_healthy
@@ -138,13 +138,13 @@ services:
       - "9095:9095"
 
   kafdrop:
-    image: obsidiandynamics/kafdrop:4.0.1
+    image: obsidiandynamics/kafdrop
     container_name: kafdrop-otuskafka
     restart: "no"
     ports:
       - "9000:9000"
     environment:
-      KAFKA_BROKERCONNECT: "kafka1:9191"
-      JVM_OPTS: "-XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+      KAFKA_BROKERCONNECT: "kafka2:9192,kafka1:9191,kafka3:9193,kafka4:9194,kafka5:9195"
+      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
     depends_on:
       - "kafka1"
