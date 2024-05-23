@@ -63,7 +63,7 @@ services:
       - zookeeper
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:7.4.0
+    image: confluentinc/cp-schema-registry:latest
     container_name: schema-registry
     hostname: schema-registry
     depends_on:
