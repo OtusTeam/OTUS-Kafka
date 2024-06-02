@@ -16,3 +16,4 @@
 - **21** [Kafka Connect](lesson-21)
 - **22** [ksqlDB](lesson-22)
 - **23** [Schema Registry](lesson-23)
+- **24** [Геораспределённая Kafka](lesson-24)
