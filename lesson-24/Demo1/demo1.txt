@@ -1,0 +1,58 @@
+1) Запускаем Kafka
+docker compose up -d
+
+2) Проверяем сервисы
+docker compose ps -a
+
+3) Создаём топик test
+docker exec kafka kafka-topics --create --topic test --bootstrap-server kafka:9092
+
+4) Выводим список топиков
+docker exec -ti kafka kafka-topics --list --bootstrap-server kafka:9092
+
+5) Отправим сообщения в топик
+docker exec -ti kafka kafka-console-producer --topic test --bootstrap-server kafka:19092 --property parse.key=true --property key.separator=,
+1,one
+2,two
+3,three
+4,four
+5,five
+6,six
+7,seven
+8,eight
+9,nine
+10,ten
+^D
+
+6) Прочитаем сообщения из топика
+docker exec -ti kafka kafka-console-consumer --topic test --group g1 --bootstrap-server kafka:9092 --property print.offset=true --property print.key=true --from-beginning
+^C
+
+7) Отправим сообщения в топик
+docker exec -ti kafka kafka-console-producer --topic test --bootstrap-server kafka:19092 --property parse.key=true --property key.separator=,
+6,six
+7,seven
+8,eight
+9,nine
+10,ten
+^D
+
+8) Прочитаем сообщения из топика
+docker exec -ti kafka kafka-console-consumer --topic test --group g1 --bootstrap-server kafka:9092 --property print.offset=true --property print.key=true
+^C
+
+9) Прочитаем сообщения из топика ещё раз
+docker exec -ti kafka kafka-console-consumer --topic test --group g1 --bootstrap-server kafka:9092 --property print.offset=true --property print.key=true
+^C
+
+10) Сбросим смещения потребителей
+docker exec -ti kafka kafka-consumer-groups --reset-offsets --all-topics --group g1 --to-offset 5 --execute --bootstrap-server kafka:9092
+
+11) Прочитаем сообщения из топика ещё раз
+docker exec -ti kafka kafka-console-consumer --topic test --group g1 --bootstrap-server kafka:9092 --property print.offset=true --property print.key=true
+^C
+
+12) Останавливаем Kafka
+docker compose stop
+docker container prune -f
+docker volume prune -f
