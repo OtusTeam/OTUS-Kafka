@@ -88,8 +88,16 @@ CREATE TABLE customers_by_key AS
 18) Создадим запрос к таблице
 SELECT * FROM customers_by_key;
 
-19) Создаём ещё одну таблицу
-^C
+19) Удаляем коннектор
+DROP CONNECTOR `customers_source`;
+^D
+
+20) Завершаем работу
+docker compose stop
+docker container prune -f
+docker volume prune -f
+
+
 CREATE TABLE customers_by_key_5 AS
     SELECT id,
            latest_by_offset(name) AS name,
@@ -99,15 +107,3 @@ CREATE TABLE customers_by_key_5 AS
     HAVING latest_by_offset(__DELETED) = 'false'
     EMIT CHANGES;
 
-20) Создадим запрос к таблице
-SELECT * FROM customers_by_key_5;
-^C
-
-21) Удаляем коннектор
-DROP CONNECTOR `customers_source`;
-^D
-
-22) Завершаем работу
-docker compose stop
-docker container prune -f
-docker volume prune -f

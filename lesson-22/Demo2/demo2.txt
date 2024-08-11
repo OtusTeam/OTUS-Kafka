@@ -51,10 +51,10 @@ SHOW TOPICS;
 
 13) Выведем содержимое топика
 PRINT `postgres.titles` FROM BEGINNING;
+^C
 
 14) Удаляем коннектор
 DROP CONNECTOR `postgres-source`;
-^D
 
 15) Завершаем работу
 docker compose stop
