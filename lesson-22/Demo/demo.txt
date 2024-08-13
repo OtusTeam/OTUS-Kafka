@@ -29,7 +29,7 @@ SET 'auto.offset.reset' = 'earliest';
 SHOW TOPICS;
 
 1.6) Создаём поток, который читает топик users
-CREATE STREAM users (ROWKEY INT KEY, USERNAME VARCHAR) WITH (KAFKA_TOPIC='users', VALUE_FORMAT='JSON');
+CREATE STREAM users (ROWKEY INT KEY, USERNAME VARCHAR) WITH (KAFKA_TOPIC='users', VALUE_FORMAT='JSON', PARTITIONS=3);
 
 1.7) Работа с потоками
 SHOW STREAMS;
