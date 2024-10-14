@@ -1,6 +1,5 @@
 0) Запуск кластера Kafka
 export DOCKER_CLI_HINTS=false
-cd Kafka-UI
 docker compose up -d
 docker compose ps -a
 
@@ -8,82 +7,82 @@ docker compose ps -a
 1) Основные операции с топиками
 
 1.1) Просмотр списка топиков
-docker exec -ti kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 1.2) Создадим топик test
-docker exec -ti kafka1 kafka-topics --create --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-topics --create --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 1.3) Отправим в топик test несколько сообщений
-docker exec -ti kafka1 kafka-console-producer --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094 --property parse.key=true --property key.separator=,
+docker exec -ti kafka1 kafka-console-producer --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --property parse.key=true --property key.separator=,
 >1,one
 >2,two
 >3,three
 ^D
 
 1.4) Прочитаем сообщения из топика test
-docker exec -ti kafka1 kafka-console-consumer --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094 --from-beginning --property print.key=true --property print.offset=true --property print.partiotion=true
+docker exec -ti kafka1 kafka-console-consumer --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --from-beginning --property print.key=true --property print.offset=true --property print.partiotion=true
 ^C
 
 1.5) Посмотрим на описания всех топиков
-docker exec -ti kafka1 kafka-topics --describe --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-topics --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 1.6) Посмотрим на описания всех топиков, кроме служебных
-docker exec -ti kafka1 kafka-topics --describe --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094 --exclude-internal
+docker exec -ti kafka1 kafka-topics --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --exclude-internal
 
 1.7) Посмотрим на описание только топика test
-docker exec -ti kafka1 kafka-topics --describe --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-topics --describe --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 1.8) Увеличим количество партиций топика test до трёх
-docker exec -ti kafka1 kafka-topics --alter --topic test --partitions 3 --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-topics --alter --topic test --partitions 3 --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 1.9) Посмотрим на описание только топика test
-docker exec -ti kafka1 kafka-topics --describe --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-topics --describe --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 
 2) Репликация
 
 2.1) Создаём топики t31 и t33, оба с трями партициями, но с разным колеством реплик
-docker exec -ti kafka1 kafka-topics --create --topic t31 --partitions 3 --replication-factor 1 --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
-docker exec -ti kafka1 kafka-topics --create --topic t33 --partitions 3 --replication-factor 3 --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-topics --create --topic t31 --partitions 3 --replication-factor 1 --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+docker exec -ti kafka1 kafka-topics --create --topic t33 --partitions 3 --replication-factor 3 --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 2.2) Посмотрим на описания всех топиков, кроме служебных
-docker exec -ti kafka1 kafka-topics --describe --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094 --exclude-internal
+docker exec -ti kafka1 kafka-topics --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --exclude-internal
 
 2.3) Роняем брокер 2:
 docker stop kafka2
 docker compose ps -a
 
 2.4) Проверяем сотояние топиков
-docker exec -ti kafka1 kafka-topics --describe --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094 --exclude-internal
+docker exec -ti kafka1 kafka-topics --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --exclude-internal
 
 2.5) Поднимаем брокер 2:
 docker compose up -d
 docker compose ps -a
 
 2.6) Проверяем сотояние топиков
-docker exec -ti kafka1 kafka-topics --describe --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094 --exclude-internal
+docker exec -ti kafka1 kafka-topics --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --exclude-internal
 
 
 3) Данные в топиках
 
 3.1) Выводим информацию о хранении топика
-docker exec -ti kafka1 kafka-log-dirs --topic-list test --describe --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
-docker exec -ti kafka1 kafka-log-dirs --topic-list test --describe --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094 | tail -1 | jq
+docker exec -ti kafka1 kafka-log-dirs --topic-list test --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+docker exec -ti kafka1 kafka-log-dirs --topic-list test --describe --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 | tail -1 | jq
 
 3.2) Подключаемся к брокеру 1 и проверяем папку для топика test
 docker exec -ti kafka1 ls -la /var/lib/kafka/data/test-1
 
 3.3) Отправим сообщения в топик test
-docker exec -ti kafka1 kafka-producer-perf-test --topic test --num-records 1000 --record-size 10 --throughput -1 --producer-props bootstrap.servers=kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-producer-perf-test --topic test --num-records 1000 --record-size 10 --throughput -1 --producer-props bootstrap.servers=kafka1:9092,kafka2:9092,kafka3:9092
 
 3.4) Выведем информацию о смещениях топика test
-docker exec -ti kafka1 kafka-get-offsets --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-get-offsets --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 3.5) Подключаемся к брокеру 2 и проверяем папку для топика test (номер партиции с данными может быть другим)
 docker exec -ti kafka2 ls -la /var/lib/kafka/data/test-2
 
 3.6) Прочитаем сообщения в топике test
-docker exec -ti kafka1 kafka-console-consumer --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094 --from-beginning --property print.offset=true --property print.partition=true
+docker exec -ti kafka1 kafka-console-consumer --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --from-beginning --property print.offset=true --property print.partition=true
 ^C
 
 3.7) Посмотрим на содержимое журнала на брокере 2 (номер партиции с данными может быть другим)
@@ -92,41 +91,47 @@ docker exec -ti kafka2 kafka-dump-log --print-data-log --files /var/lib/kafka/da
 
 3.8) Удалим сообщения из топика test
 docker cp deleteme.json kafka1:/tmp/deleteme.json
-docker exec -ti kafka1 kafka-delete-records --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094 --offset-json-file /tmp/deleteme.json
+docker exec -ti kafka1 kafka-delete-records --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --offset-json-file /tmp/deleteme.json
 
 3.9) Выведем информацию о смещениях топика test
-docker exec -ti kafka1 kafka-get-offsets --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-get-offsets --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 3.10) Прочитаем сообщения в топике test
-docker exec -ti kafka1 kafka-console-consumer --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094 --from-beginning --property print.offset=true --property print.key=true --property print.partition=true
+docker exec -ti kafka1 kafka-console-consumer --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --from-beginning --property print.offset=true --property print.key=true --property print.partition=true
 ^C
 
 
 4) Параметры
 
 4.1) Выведем параметры топика test
-docker exec -ti kafka1 kafka-configs --describe --all --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-configs --describe --all --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 4.2) Выведем динамические параметры топиков
-docker exec -ti kafka1 kafka-configs --describe --entity-type topics --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-configs --describe --entity-type topics --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 4.3) Изменим значение параметра delete.retention.ms у топика test
-docker exec -ti kafka1 kafka-configs --alter --add-config delete.retention.ms=86400 --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-configs --alter --add-config delete.retention.ms=86400 --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 4.4) Выведем динамические параметры топика test
-docker exec -ti kafka1 kafka-configs --describe --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-configs --describe --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 4.5) Выведем информацию о смещениях топика test
-docker exec -ti kafka1 kafka-get-offsets --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-get-offsets --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 4.6) Вернём топику test значение по умолчанию параметру delete.retention.ms
-docker exec -ti kafka1 kafka-configs --alter --add-config delete.retention.ms=86400000 --topic test --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+docker exec -ti kafka1 kafka-configs --alter --add-config delete.retention.ms=86400000 --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 
 5) Производительность
 
 5.1) Проведем тестирование кластера при отправке сообщений
-    docker exec -ti kafka1 kafka-producer-perf-test --topic test --num-records 1000000 --record-size 100 --throughput -1 --producer-props bootstrap.servers=kafka1:9092,kafka2:9093,kafka3:9094
+    docker exec -ti kafka1 kafka-producer-perf-test --topic test --num-records 1000000 --record-size 100 --throughput -1 --producer-props bootstrap.servers=kafka1:9092,kafka2:9092,kafka3:9092
 
 5.2) Проведем тестирование кластера при чтении сообщений
-    docker exec -ti kafka1 kafka-consumer-perf-test --topic test --messages 1000000 --bootstrap-server kafka1:9092,kafka2:9093,kafka3:9094
+    docker exec -ti kafka1 kafka-consumer-perf-test --topic test --messages 1000000 --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+6) Останавливаем кластер Kafka
+docker compose down
+docker container prune -f
+docker volume prune -f
+docker network prune -f
