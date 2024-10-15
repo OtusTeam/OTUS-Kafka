@@ -1,5 +1,8 @@
 {"partitions":
-	[{"topic": "test", "partition": 2,
-	"offset": 990}],
+	[
+        {"topic": "test", "partition": 0, "offset": 280},
+        {"topic": "test", "partition": 1, "offset": 420},
+        {"topic": "test", "partition": 2, "offset": 300}
+        ],
 	"version":1
 }
