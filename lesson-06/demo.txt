@@ -18,8 +18,8 @@
     - Kafka: Remote Process: localhost:10030
 
 1.4) Нагружаем Kafka
-    kafka-topics.sh --create --topic test --bootstrap-server localhost:9092
-    kafka-producer-perf-test.sh --topic test --num-records 1000000 --record-size 100 --throughput -1 --producer-props bootstrap.servers=localhost:9092
+    docker exec -ti kafka1 kafka-topics --create --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --partitions 3 --replication-factor 3
+    docker exec -ti kafka1 kafka-producer-perf-test --topic test --num-records 1000000 --record-size 1024 --throughput -1 --producer-props bootstrap.servers=kafka1:9092,kafka2:9092,kafka3:9092
 
 
 2) Prometheus + Grafana
@@ -43,10 +43,8 @@
     Импортируем дашборд: Dashboards -> New -> Import
 
 2.6) Нагружаем Kafka
-    docker exec kafka-1 kafka-topics --create --topic test --bootstrap-server kafka-1:19092,kafka-2:19093,kafka-3:19094 --partitions 3 --replication-factor 3
-    docker exec kafka-1 kafka-producer-perf-test --topic test --num-records 1000000 --record-size 1024 --throughput -1 --producer-props bootstrap.servers=kafka-1:19092,kafka-2:19093,kafka-3:19094
-    docker exec kafka-1 kafka-consumer-perf-test --topic test --bootstrap-server kafka-1:19092,kafka-2:19093,kafka-3:19094 --group cp1 --messages 1000000
-    docker exec kafka-1 kafka-console-consumer --topic test --bootstrap-server kafka-1:19092,kafka-2:19093,kafka-3:19094 --group cg1 --from-beginning
+    docker exec -ti kafka1 kafka-consumer-perf-test --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --messages 1000000
+    docker exec -ti kafka1 kafka-producer-perf-test --topic test --num-records 1000000 --record-size 1024 --throughput -1 --producer-props bootstrap.servers=kafka1:9092,kafka2:9092,kafka3:9092
 
 
 3) Останавливаем Kafka
