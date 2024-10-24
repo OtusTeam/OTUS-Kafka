@@ -2,7 +2,7 @@ auth:
   type: DISABLED
 kafka:
   clusters:
-  - bootstrapServers: kafka1:19092,kafka2:19093,kafka3:19094
+  - bootstrapServers: kafka1:9092,kafka2:9092,kafka3:9092
     kafkaConnect:
     - address: http://connect:8083
       name: connect

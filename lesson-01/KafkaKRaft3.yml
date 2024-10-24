@@ -1,10 +1,10 @@
 services:
   kafka1:
-    image: confluentinc/cp-kafka:latest
+    image: apache/kafka:latest
     container_name: kafka1
     hostname: kafka1
     ports:
-      - "19092:9092"
+      - "19092:19092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
@@ -18,11 +18,11 @@ services:
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
 
   kafka2:
-    image: confluentinc/cp-kafka:latest
+    image: apache/kafka:latest
     container_name: kafka2
     hostname: kafka2
     ports:
-      - "29092:9092"
+      - "29092:29092"
     environment:
       KAFKA_NODE_ID: 2
       KAFKA_PROCESS_ROLES: 'broker,controller'
@@ -36,11 +36,11 @@ services:
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
 
   kafka3:
-    image: confluentinc/cp-kafka:latest
+    image: apache/kafka:latest
     container_name: kafka3
     hostname: kafka3
     ports:
-      - "39092:9092"
+      - "39092:39092"
     environment:
       KAFKA_NODE_ID: 3
       KAFKA_PROCESS_ROLES: 'broker,controller'
