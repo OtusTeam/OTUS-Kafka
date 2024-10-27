@@ -1,0 +1,21 @@
+{
+    "name": "customers-ch-connector",
+    "config": {
+        "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+        "database.hostname": "postgres",
+        "database.port": "5432",
+        "database.user": "postgres",
+        "database.password": "password",
+        "database.dbname": "postgres",
+        "database.server.name": "postgres",
+        "table.include.list": "public.customers",
+        "topic.prefix": "postgres.ch",
+        "transforms": "unwrap",
+        "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+        "transforms.unwrap.drop.tombstones": "false",
+        "transforms.unwrap.delete.handling.mode": "rewrite",
+        "plugin.name": "pgoutput",
+        "slot.name": "ch",
+        "tasks.max": "1"
+        }
+   }

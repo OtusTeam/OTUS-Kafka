@@ -1,0 +1,382 @@
+0) Запуск
+0.1) Запускаем Kafka, Kafka Connect, Postgres и ClickHouse
+export DOCKER_CLI_HINTS=false
+docker compose up -d
+docker compose ps -a
+
+0.2) Проверям логи Kafka Connect
+docker logs -f connect
+^C
+
+0.3) Проверяем статус и плагины коннекторов
+curl http://localhost:8083 | jq
+curl http://localhost:8083/connector-plugins | jq
+
+
+1) Демо 1. Файловые источник и приёмник
+
+1.1) Создаём топик data
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+docker exec kafka1 kafka-topics --create --topic data --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+1.2) Создаём коннектор load-kafka
+curl -X POST --data-binary "@source.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+1.3) Проверяем коннектор load-kafka
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/load-kafka/status | jq
+
+1.4) Читаем топик data
+docker exec kafka1 kafka-console-consumer --topic data --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --from-beginning
+^C
+
+1.5) Создаём коннектор dump-kafka
+curl -X POST --data-binary "@dump.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+1.6) Проверяем коннектор dump-kafka
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/dump-kafka/status | jq
+
+1.7) Проверяем выгрузку данных из топика в файл
+docker exec connect ls -la /data
+docker exec connect diff /data/source.csv /data/dump.csv
+
+1.8) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/load-kafka
+curl -X DELETE http://localhost:8083/connectors/dump-kafka
+
+
+2) Демо 2. JDBC Source (PostgreSQL)
+
+2.1) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+2.2) Подключаемся к базе и загружаем данные
+docker exec -ti postgres psql -U postgres
+CREATE TABLE clients (id int PRIMARY KEY, first_name text, last_name text, gender text, card_number text, bill numeric(7,2), created_date timestamp, modified_date timestamp);
+COPY clients FROM '/data/clients.csv' WITH (FORMAT csv, HEADER true);
+SELECT * FROM clients LIMIT 5;
+\q
+
+2.3) Создаём коннектор clients-connector
+curl -X POST --data-binary "@clients.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+2.4) Проверяем коннектор clients-connector
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/clients-connector/status | jq
+
+2.5) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+2.6) Проверим смещение в топике postgres.clients
+docker exec kafka1 kafka-get-offsets --topic postgres.clients --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+2.7) Читаем топик postgres.clients
+docker exec kafka1 kafka-console-consumer --topic postgres.clients --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --from-beginning --property print.offset=true
+
+2.8) Открываем второй терминал, подключаемся к базе и обновляем данные
+docker exec -ti postgres psql -U postgres
+UPDATE clients SET bill = 5000, modified_date = current_timestamp(0)  WHERE id = 262;
+\q
+
+2.9) В первом терминале прерываем kafka-console-consumer
+^C
+
+2.10) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/clients-connector
+
+
+3) Демо 3. JDBC Sink (PostgreSQL)
+
+3.1) Подключаемся к базе и проверяем таблицы
+docker exec -ti postgres psql -U postgres
+\d
+\q
+
+3.2) Создаём топик customers
+docker exec kafka1 kafka-topics --create --topic customers --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+3.3) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+3.4) Запишем несколько сообщений в топик customers
+docker exec -ti kafka1 kafka-console-producer --topic customers --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"id"},{"type":"string","optional":false,"field":"name"}]},"payload":{"id":1,"name":"Jane Doe"}}
+{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"id"},{"type":"string","optional":false,"field":"name"}]},"payload":{"id":2,"name":"John Smith"}}
+{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"id"},{"type":"string","optional":false,"field":"name"}]},"payload":{"id":3,"name":"Ann Black"}}
+^D
+
+3.5) Проверим сообщения в топике customers
+docker exec -ti kafka1 kafka-console-consumer --topic customers --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --from-beginning --property print.offset=true
+^C
+
+3.6) Создаём коннектор customers-connector
+curl -X POST --data-binary "@customers.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+3.7) Проверяем коннектор cliecustomersnts-connector
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/customers-connector/status | jq
+
+3.8) Подключаемся к базе и проверяем таблицы
+docker exec -ti postgres psql -U postgres
+\d
+SELECT * FROM customers;
+\q
+
+3.9) Добавляем сообщения в топик customers
+docker exec -ti kafka1 kafka-console-producer --topic customers --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"id"},{"type":"string","optional":false,"field":"name"}]},"payload":{"id":4,"name":"Agatha Christie"}}
+{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"id"},{"type":"string","optional":false,"field":"name"}]},"payload":{"id":5,"name":"Arthur Conan Doyle"}}
+{"schema":{"type":"struct","fields":[{"type":"int32","optional":false,"field":"id"},{"type":"string","optional":false,"field":"name"}]},"payload":{"id":6,"name":"Edgar Allan Poe"}}
+^D
+
+3.10) Подключаемся к базе и проверяем таблицу customers
+docker exec -ti postgres psql -U postgres
+SELECT * FROM customers;
+\q
+
+3.11) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/customers-connector
+
+
+4) Демо 4. JDBC Source (PostgreSQL), преобразования
+
+4.1) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+4.2) Создаём коннектор clients-smt-connector
+curl -X POST --data-binary "@clients-smt.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+4.3) Проверяем коннектор customers-cdc-connector
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/clients-smt-connector/status | jq
+
+4.4) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+4.5) Проверим смещение в топике postgres.clients
+docker exec kafka1 kafka-get-offsets --topic postgres.smt.clients --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+4.6) Читаем топик postgres.clients
+docker exec kafka1 kafka-console-consumer --topic postgres.smt.clients --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --from-beginning --property print.headers=true --property print.offset=true
+^C
+
+4.7) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/clients-smt-connector
+
+
+5) Демо 5. PostgreSQL CDC
+
+5.1) Подключаемся к базе
+docker exec -ti postgres psql -U postgres
+SELECT * FROM customers;
+\q
+
+5.2) Создаём коннектор customers-cdc-connector
+curl -X POST --data-binary "@customers-cdc.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+5.3) Проверяем коннектор customers-cdc-connector
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/customers-cdc-connector/status | jq
+
+5.4) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+5.5) Читаем топик postgres.cdc.public.customers
+docker exec kafka1 kafka-console-consumer --topic postgres.cdc.public.customers --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --from-beginning --property print.offset=true --property print.key=true
+
+5.6) Открываем второй терминал, обновляем запись в таблице
+docker exec -ti postgres psql -U postgres
+UPDATE customers SET name = 'Sarah' WHERE id = 6;
+SELECT * FROM customers;
+\q
+
+5.7) В первом терминале прерываем kafka-console-consumer
+^C
+
+5.8) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/customers-cdc-connector
+
+
+6) Демо 6. PostgreSQL CDC, второй вариант
+
+6.1) Проверяем список топиков
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+6.2) Создаём коннектор customers-flat-connector
+curl -X POST --data-binary "@customers-flat.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+6.4) Проверяем коннектор customers-flat-connector
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/customers-flat-connector/status | jq
+
+6.5) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+6.6) Читаем топик postgres.flat.public.customers
+docker exec kafka1 kafka-console-consumer --topic postgres.flat.public.customers --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --property print.offset=true --property print.key=true --from-beginning
+
+6.7) Открываем второй терминал, обновляем записи в таблице
+docker exec -ti postgres psql -U postgres
+INSERT INTO customers (id, name) VALUES (7, 'Thor');
+UPDATE customers set name = 'Ann' WHERE id = 3;
+DELETE FROM customers WHERE id = 2;
+\q
+
+6.8) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/customers-flat-connector
+
+
+7) Демо 7. PostgreSQL CDC to ClickHouse
+
+7.2) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+7.3) Подключаемся к Postgres
+docker exec -ti postgres psql -U postgres
+\d
+SELECT * FROM customers;
+\q
+
+7.4) Создаём коннектор customers
+curl -X POST --data-binary "@customers-ch.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+7.5) Проверяем коннектор customers
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/customers-ch-connector/status | jq
+
+7.6) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+7.7) Читаем топик postgres.ch.public.customers
+docker exec kafka1 kafka-console-consumer --topic postgres.ch.public.customers --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --from-beginning --property print.offset=true --property print.key=true
+^C
+
+7.8) Подключаемся к ClickHouse и создаём таблицы
+docker exec -ti clickhouse clickhouse-client
+DROP TABLE IF EXISTS customers;
+CREATE TABLE customers (
+    id Int32,
+    name String,
+    `__deleted` String
+)
+ENGINE = ReplacingMergeTree
+PRIMARY KEY (id);
+\q
+
+7.9) Создаём коннектор clickhouse
+curl -X POST --data-binary "@clickhouse.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+7.10) Проверяем коннектор clickhouse
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/clickhouse-connector/status | jq
+
+7.11) Подключаемся к ClickHouse и проверяем таблицу
+docker exec -ti clickhouse clickhouse-client
+SELECT * FROM customers;
+\q
+
+7.12) Добавляем запись в таблицу
+docker exec -ti postgres psql -U postgres
+INSERT INTO customers VALUES (8, 'Bill');
+SELECT * FROM customers;
+\q
+
+7.13) Подключаемся к ClickHouse и проверяем таблицу
+docker exec -ti clickhouse clickhouse-client
+SELECT * FROM customers;
+\q
+
+7.14) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/clickhouse-connector
+curl -X DELETE http://localhost:8083/connectors/customers-ch-connector
+
+
+8) Демо 8. PostgreSQL CDC to ClickHouse, второй вариант
+
+8.2) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+8.3) Создаём коннектор customers-flat-connector
+curl -X POST --data-binary "@customers-flat.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+8.4) Проверяем коннектор customers-flat-connector
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/customers-flat-connector/status | jq
+
+8.5) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+8.6) Читаем топик postgres.flat.public.customers
+docker exec kafka1 kafka-console-consumer --topic postgres.flat.public.customers --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --property print.offset=true --property print.key=true --from-beginning
+^C
+
+8.7) Подключаемся к ClickHouse и создаём таблицы
+docker exec -ti clickhouse clickhouse-client
+DROP TABLE IF EXISTS customers;
+CREATE TABLE customers (
+    `before.id` Nullable(Int32),
+    `before.name` Nullable(String),
+    `after.id` Nullable(Int32),
+    `after.name` Nullable(String),
+    `source.version` Nullable(String),
+    `source.connector` Nullable(String),
+    `source.name` Nullable(String),
+    `source.ts_ms` Nullable(UInt64),
+    `source.snapshot` Nullable(String),
+    `source.db` Nullable(String),
+    `source.sequence` Nullable(String),
+    `source.schema` Nullable(String),
+    `source.table` Nullable(String),
+    `source.txId` Nullable(UInt64),
+    `source.lsn` Nullable(UInt64),
+    `source.xmin` Nullable(UInt64),
+    op LowCardinality(String),
+    ts_ms Nullable(UInt64),
+    `transaction.id` Nullable(UInt64),
+    `transaction.total_order` Nullable(UInt64),
+    `transaction.data_collection_order` Nullable(UInt64)
+)
+ENGINE = ReplacingMergeTree
+ORDER BY tuple();
+SHOW TABLES;
+\q
+
+8.8) Создаём коннектор clickhouse-flat-connector
+curl -X POST --data-binary "@clickhouse-flat.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+8.9) Проверяем коннектор clickhouse-flat-connector
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/clickhouse-flat-connector/status | jq
+
+8.10) Подключаемся к ClickHouse и проверяем таблицу
+docker exec -ti clickhouse clickhouse-client
+SELECT * FROM customers;
+\q
+
+8.11) Добавляем запись в таблицу
+docker exec -ti postgres psql -U postgres
+INSERT INTO customers (id, name) VALUES (11, 'Sue');
+INSERT INTO customers (id, name) VALUES (12, 'Bill');
+INSERT INTO customers (id, name) VALUES (13, 'Ann');
+UPDATE customers set name = 'Jane' WHERE id = 1;
+DELETE FROM customers WHERE id = 4;
+SELECT * FROM customers;
+\q
+
+8.12) Подключаемся к ClickHouse и проверяем таблицу
+docker exec -ti clickhouse clickhouse-client
+SELECT * FROM customers;
+\q
+
+7.14) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/clickhouse-flat-connector
+curl -X DELETE http://localhost:8083/connectors/customers-flat-connector
+
+
+9) Останавливаем всё
+docker compose down
+docker container prune -f
+docker volume prune -f
+docker network prune -f

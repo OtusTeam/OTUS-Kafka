@@ -1,0 +1,16 @@
+{
+    "name": "customers-connector",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "connection.url": "jdbc:postgresql://postgres:5432/postgres",
+        "connection.user": "postgres",
+        "connection.password": "password",
+        "connection.ds.pool.size": 5,
+        "topics": "customers",
+        "auto.create": "true",
+        "insert.mode.databaselevel": true,
+        "pk.mode" : "record_value",
+        "pk.fields": "id",
+        "tasks.max": "1"
+    }
+}

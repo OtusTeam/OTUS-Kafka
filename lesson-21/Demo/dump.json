@@ -1,0 +1,8 @@
+{
+    "name":"dump-kafka",
+    "config": {
+        "connector.class": "FileStreamSink",
+        "file": "/data/dump.csv",
+        "topics": "data"
+    }
+}

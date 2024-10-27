@@ -1,0 +1,17 @@
+{
+    "name": "clients-connector",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+        "connection.url": "jdbc:postgresql://postgres:5432/postgres",
+        "connection.user": "postgres",
+        "connection.password": "password",
+        "table.whitelist": "public.clients",
+        "numeric.mapping": "best_fit",
+        "mode": "timestamp",
+        "timestamp.column.name": "modified_date",
+        "validate.non.null": false,
+        "batch.max.rows": 100,
+        "topic.prefix": "postgres.",
+        "tasks.max": "1"
+        }
+   }

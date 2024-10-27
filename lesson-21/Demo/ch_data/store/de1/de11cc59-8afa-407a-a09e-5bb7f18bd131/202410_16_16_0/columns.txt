@@ -1,0 +1,20 @@
+columns format version: 1
+18 columns:
+`hostname` LowCardinality(String)
+`event_date` Date
+`event_time` DateTime
+`event_time_microseconds` DateTime64(6)
+`id` UInt64
+`parent_ids` Array(UInt64)
+`plan_step` UInt64
+`plan_group` UInt64
+`initial_query_id` String
+`query_id` String
+`name` LowCardinality(String)
+`elapsed_us` UInt64
+`input_wait_elapsed_us` UInt64
+`output_wait_elapsed_us` UInt64
+`input_rows` UInt64
+`input_bytes` UInt64
+`output_rows` UInt64
+`output_bytes` UInt64

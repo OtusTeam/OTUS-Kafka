@@ -1,0 +1,18 @@
+{
+    "name": "clickhouse-connector",
+    "config": {
+      "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
+      "database": "default",
+      "hostname": "clickhouse",
+      "port": "8123",
+      "ssl": "false",
+      "username": "username",
+      "password": "password",
+      "topics": "postgres.ch.public.customers",
+      "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+      "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+      "value.converter.schemas.enable": "true",
+      "topic2TableMap": "postgres.ch.public.customers=customers",
+      "tasks.max": "1"
+    }
+}

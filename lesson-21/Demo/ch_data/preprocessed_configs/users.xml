@@ -1,0 +1,62 @@
+<!-- This file was generated automatically.
+     Do not edit it: it is likely to be discarded and generated again before it's read next time.
+     Files used to generate this file:
+       /etc/clickhouse-server/users.xml
+       /etc/clickhouse-server/users.d/default-user.xml      -->
+
+<clickhouse>
+    <!-- See also the files in users.d directory where the settings can be overridden. -->
+
+    <!-- Profiles of settings. -->
+    <profiles>
+        <!-- Default settings. -->
+        <default>
+        </default>
+
+        <!-- Profile that allows only read queries. -->
+        <readonly>
+            <readonly>1</readonly>
+        </readonly>
+    </profiles>
+
+    <!-- Users and ACL. -->
+    <users>
+        <!-- If user name was not specified, 'default' user is used. -->
+        
+    
+        <!-- Remove default user -->
+        
+
+        <username>
+          <profile>default</profile>
+          <networks>
+            <ip>::/0</ip>
+          </networks>
+          <password>password</password>
+          <quota>default</quota>
+          <access_management>0</access_management>
+        </username>
+      </users>
+
+    <!-- Quotas. -->
+    <quotas>
+        <!-- Name of quota. -->
+        <default>
+            <!-- Limits for time interval. You could specify many intervals with different limits. -->
+            <interval>
+                <!-- Length of interval. -->
+                <duration>3600</duration>
+
+                <!-- No limits. Just calculate resource usage for time interval. -->
+                <queries>0</queries>
+                <errors>0</errors>
+                <result_rows>0</result_rows>
+                <read_rows>0</read_rows>
+                <execution_time>0</execution_time>
+            </interval>
+        </default>
+    </quotas>
+
+      <!-- Docs: <https://clickhouse.com/docs/en/operations/settings/settings_users/> -->
+      
+    </clickhouse>
