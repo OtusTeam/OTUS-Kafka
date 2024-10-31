@@ -1,5 +1,5 @@
 {
-    "name": "customers-ch-connector",
+    "name": "customers-nr-connector",
     "config": {
         "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
         "database.hostname": "postgres",
@@ -7,18 +7,15 @@
         "database.user": "postgres",
         "database.password": "password",
         "database.dbname": "postgres",
+        "database.server.name": "postgres",
         "table.include.list": "public.customers",
-        "topic.prefix": "postgres.ch",
-        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
-        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-        "key.converter.schemas.enable": "false",
-        "value.converter.schemas.enable": "false",
+        "topic.prefix": "postgres.nr",
         "transforms": "unwrap",
         "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
-        "transforms.unwrap.drop.tombstones": "true",
+        "transforms.unwrap.drop.tombstones": "false",
         "transforms.unwrap.delete.handling.mode": "rewrite",
         "plugin.name": "pgoutput",
-        "slot.name": "ch",
+        "slot.name": "nr",
         "tasks.max": "1"
         }
    }
