@@ -10,10 +10,12 @@ docker compose ps -a
 docker logs -f connect
 ^C
 
+0.4) Открываем два терминала
+
 
 1) Основы ksqlDB
 
-1.1) Проверяем список топиков
+1.1) В первом терминале проверяем список топиков
 docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 1.2) Запускаем ksqlDB CLI
@@ -26,7 +28,8 @@ SET 'auto.offset.reset' = 'earliest';
 SHOW TOPICS;
 
 1.5) Создаём поток, который читает топик users
-CREATE STREAM users (ROWKEY INT KEY, USERNAME VARCHAR) WITH (KAFKA_TOPIC='users', VALUE_FORMAT='JSON', PARTITIONS=3);
+CREATE STREAM users (ROWKEY INT KEY, USERNAME VARCHAR)
+WITH (KAFKA_TOPIC='users', VALUE_FORMAT='JSON', PARTITIONS=3);
 
 1.6) Работа с потоками
 SHOW STREAMS;
@@ -35,10 +38,10 @@ DESCRIBE users;
 DESCRIBE users EXTENDED;
 
 1.7) Добавим записи в поток
-INSERT INTO users (username) VALUES ('Alex');
-INSERT INTO users (username) VALUES ('Barbara');
-INSERT INTO users (username) VALUES ('Carl');
-INSERT INTO users (username) VALUES ('Fiona');
+INSERT INTO users VALUES (1, 'Alex');
+INSERT INTO users VALUES (2, 'Barbara');
+INSERT INTO users VALUES (3, 'Carl');
+INSERT INTO users VALUES (4, 'Fiona');
 
 1.8) Прочитаем записи (pull-запрос) в потоке
 SELECT * FROM users;
@@ -49,11 +52,11 @@ PRINT users FROM BEGINNING;
 1.10) Создадим push-запрос
 SELECT 'Hello, ' + USERNAME AS GREETING FROM users EMIT CHANGES;
 
-1.11) Открываем второй терминал, добавляем записи в поток
+1.11) Во втором терминале добавляем записи в поток
 docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
-INSERT INTO users (username) VALUES ('Mary');
-INSERT INTO users (username) VALUES ('Garry');
-INSERT INTO users (username) VALUES ('Ann');
+INSERT INTO users VALUES (5, 'Mary');
+INSERT INTO users VALUES (6, 'Garry');
+INSERT INTO users VALUES (7, 'Ann');
 
 1.12) В первом терминале посмотрим на метаданные
 ^C
@@ -63,9 +66,10 @@ SELECT ROWTIME, ROWOFFSET, ROWPARTITION, * FROM users EMIT CHANGES;
 LIST QUERIES;
 SHOW QUERIES EXTENDED;
 
-1.14) Во втором терминале работаем с функциями
+1.14) Работаем с функциями
 SHOW FUNCTIONS;
 DESCRIBE FUNCTION UUID;
+^D
 
 1.15) Во первом терминале завершаем push-запрос
 ^C
@@ -73,23 +77,31 @@ DESCRIBE FUNCTION UUID;
 ## Непрерывные запросы
 
 1.16) В первом терминале создаём первый поток
-CREATE STREAM PurchaseStream (id INT KEY, product VARCHAR, left_ts VARCHAR) WITH (KAFKA_TOPIC='PurchaseTopic', VALUE_FORMAT='JSON', TIMESTAMP='left_ts', TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX', PARTITIONS=3);
+CREATE STREAM PurchaseStream (id INT KEY, product VARCHAR, left_ts VARCHAR)
+WITH (KAFKA_TOPIC='PurchaseTopic', VALUE_FORMAT='JSON',
+      TIMESTAMP='left_ts', TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX', PARTITIONS=3);
 
 1.17) Создаём второй поток
-CREATE STREAM PaymentStream (ID INT KEY, purchaseId INT, status VARCHAR, right_ts VARCHAR) WITH (KAFKA_TOPIC='PaymentTopic', VALUE_FORMAT='JSON', TIMESTAMP='right_ts', TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX', PARTITIONS=3);
+CREATE STREAM PaymentStream (id INT KEY, purchaseId INT, status VARCHAR, right_ts VARCHAR)
+WITH (KAFKA_TOPIC='PaymentTopic', VALUE_FORMAT='JSON',
+      TIMESTAMP='right_ts', TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX', PARTITIONS=3);
 
 1.18) Создаём CSAS - Create Stream As Select
-CREATE STREAM PaymentPurchaseStream WITH (KAFKA_TOPIC = 'PaymentPurchaseTopic', VALUE_FORMAT='JSON')
+CREATE STREAM PaymentPurchaseStream
+WITH (KAFKA_TOPIC = 'PaymentPurchaseTopic', VALUE_FORMAT='JSON')
 AS SELECT l.id AS purchaseId, l.product, r.status
-FROM PurchaseStream l
-INNER JOIN PaymentStream r WITHIN 7 DAYS ON l.id = r.purchaseId
-EMIT CHANGES;
+    FROM PurchaseStream l
+    INNER JOIN PaymentStream r
+    WITHIN 7 DAYS
+    GRACE PERIOD 24 HOURS
+    ON l.id = r.purchaseId
+    EMIT CHANGES;
 
 1.19) Добавим записи в потоки
-INSERT INTO PurchaseStream (id, product, left_ts) VALUES (1,  'kettle', '2022-01-29T06:01:18Z');
-INSERT INTO PurchaseStream (id, product, left_ts) VALUES (2,  'grill' , '2022-01-29T17:02:20Z');
-INSERT INTO PurchaseStream (id, product, left_ts) VALUES (3,  'toaster', '2022-01-29T13:44:10Z');
-INSERT INTO PurchaseStream (id, product, left_ts) VALUES (4,  'hair dryer', '2022-01-29T11:58:25Z');
+INSERT INTO PurchaseStream (id, product, left_ts) VALUES (1, 'kettle', '2022-01-29T06:01:18Z');
+INSERT INTO PurchaseStream (id, product, left_ts) VALUES (2, 'grill' , '2022-01-29T17:02:20Z');
+INSERT INTO PurchaseStream (id, product, left_ts) VALUES (3, 'toaster', '2022-01-29T13:44:10Z');
+INSERT INTO PurchaseStream (id, product, left_ts) VALUES (4, 'hair dryer', '2022-01-29T11:58:25Z');
 
 INSERT INTO PaymentStream (id, purchaseId, status, right_ts) VALUES (101, 1, 'OK', '2022-01-29T06:11:18Z');
 INSERT INTO PaymentStream (id, purchaseId, status, right_ts) VALUES (103, 3, 'OK', '2022-01-29T13:54:10Z');
@@ -98,25 +110,40 @@ INSERT INTO PaymentStream (id, purchaseId, status, right_ts) VALUES (104, 4, 'OK
 1.20) Проверяем объединённый поток
 SELECT * FROM PaymentPurchaseStream;
 
+1.21) Прочитаем записи в топике
+PRINT PaymentPurchaseTopic FROM BEGINNING;
+
 ## Агрегирование
 
-1.21) Во втором терминале посчитаем количество записей по каждому id
-SELECT id, count(*) as count FROM PaymentStream GROUP BY id EMIT CHANGES;
+1.22) Создаём поток
+CREATE STREAM OrderStream (ID INT KEY, status VARCHAR, ts VARCHAR)
+WITH (KAFKA_TOPIC='OrderTopic', VALUE_FORMAT='JSON',
+      TIMESTAMP='ts', TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX', PARTITIONS=3);
 
-1.22) В первом терминале добавим записи в поток
-INSERT INTO PaymentStream (id, purchaseId, status, right_ts) VALUES (101, 2, 'OK', '2022-01-29T06:11:18Z');
-INSERT INTO PaymentStream (id, purchaseId, status, right_ts) VALUES (101, 3, 'OK', '2022-01-29T06:11:18Z');
-INSERT INTO PaymentStream (id, purchaseId, status, right_ts) VALUES (103, 2, 'OK', '2022-01-29T13:54:10Z');
-INSERT INTO PaymentStream (id, purchaseId, status, right_ts) VALUES (104, 4, 'OK', '2022-01-29T12:08:25Z');
-INSERT INTO PaymentStream (id, purchaseId, status, right_ts) VALUES (104, 1, 'OK', '2022-01-29T06:11:18Z');
-INSERT INTO PaymentStream (id, purchaseId, status, right_ts) VALUES (104, 2, 'OK', '2022-01-29T06:11:18Z');
-INSERT INTO PaymentStream (id, purchaseId, status, right_ts) VALUES (103, 2, 'OK', '2022-01-29T13:54:10Z');
-INSERT INTO PaymentStream (id, purchaseId, status, right_ts) VALUES (101, 3, 'OK', '2022-01-29T13:54:10Z');
+1.23) Создаём CTAS - Create Table As Select
+CREATE TABLE OrderTable AS
+    SELECT id, count(*) as count
+    FROM OrderStream
+    GROUP BY id
+    EMIT CHANGES;
+
+1.24) Добавим записи в поток
+INSERT INTO OrderStream VALUES (2, 'OK', '2022-01-29T06:11:18Z');
+INSERT INTO OrderStream VALUES (3, 'OK', '2022-01-29T06:11:18Z');
+INSERT INTO OrderStream VALUES (2, 'OK', '2022-01-29T13:54:10Z');
+INSERT INTO OrderStream VALUES (4, 'OK', '2022-01-29T12:08:25Z');
+INSERT INTO OrderStream VALUES (1, 'OK', '2022-01-29T06:11:18Z');
+INSERT INTO OrderStream VALUES (2, 'OK', '2022-01-29T06:11:18Z');
+INSERT INTO OrderStream VALUES (2, 'OK', '2022-01-29T13:54:10Z');
+INSERT INTO OrderStream VALUES (3, 'OK', '2022-01-29T13:54:10Z');
+
+1.25) Посчитаем количество записей по каждому id
+SELECT * FROM OrderTable;
 
 
 2) ksqlDB + Kafka Connect, Вариант 1
 
-2.1) Проверяем статус и плагины коннекторов
+2.1) Во втором терминале проверяем статус и плагины коннекторов
 curl http://localhost:8083 | jq
 curl http://localhost:8083/connector-plugins | jq
 
@@ -125,20 +152,14 @@ docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:9092,kafka2:909
 
 2.3) Создадим таблицу в PostgreSQL и запишем в неё данные
 docker exec -ti postgres psql -U postgres
+\dt
 CREATE TABLE titles (id SERIAL PRIMARY KEY, title VARCHAR(120));
 INSERT INTO titles (title) values ('Stranger Things');
 INSERT INTO titles (title) values ('Black Mirror');
 INSERT INTO titles (title) values ('The Office');
 SELECT * FROM titles;
-\q
 
-2.4) Запускаем ksqlDB CLI
-docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
-
-2.5) Устанавливаем чтение с начала темы
-SET 'auto.offset.reset' = 'earliest';
-
-2.6) Создаём коннектор postgres-source
+2.4) В первом терминале создаём коннектор postgres-source
 CREATE SOURCE CONNECTOR `postgres-source` WITH (
     "connector.class" = 'io.confluent.connect.jdbc.JdbcSourceConnector',
     "connection.url" = 'jdbc:postgresql://postgres:5432/postgres?user=postgres&password=password',
@@ -148,47 +169,48 @@ CREATE SOURCE CONNECTOR `postgres-source` WITH (
     "topic.prefix" = 'postgres.',
     "key" = 'id');
 
-2.7) Выводим список коннекторов
+2.5) Выводим список коннекторов
 SHOW CONNECTORS;
 
-2.8) Получаем описание коннектора inventory-connector
+2.6) Получаем описание коннектора inventory-connector
 DESCRIBE CONNECTOR `postgres-source`;
 
-2.9) Проверяем топики
+2.7) Проверяем топики
 SHOW TOPICS;
 
-2.10) Выведем содержимое топика
+2.8) Выведем содержимое топика
 PRINT `postgres.titles` FROM BEGINNING;
 ^C
 
-2.11) Создаём поток, который читает топик postgres.titles
+2.9) Создаём поток, который читает топик postgres.titles
 CREATE STREAM titles WITH (kafka_topic = 'postgres.titles', value_format = 'avro');
 
-2.12) Выведем описание потока
+2.10) Выведем описание потока
 DESCRIBE titles EXTENDED;
 
-2.13) Прочитаем записи (pull-запрос)
+2.11) Прочитаем записи (pull-запрос)
+SELECT * FROM titles EMIT CHANGES;
+
+2.12) Во втором терминале дабавляем, изменяем и удаляем записи
+INSERT INTO titles (title) values ('Four');
+INSERT INTO titles (title) values ('Five');
+INSERT INTO titles (title) values ('Six');
 SELECT * FROM titles;
+
+2.13) Во первом терминале завершаем push-запрос
+^C
 
 
 3) ksqlDB + Kafka Connect, Вариант 2
 
-3.1) Создадим таблицу в PostgreSQL и запишем в неё данные
-docker exec -ti postgres psql -U postgres
+3.1) Во втором терминале создадим таблицу в PostgreSQL и запишем в неё данные
 CREATE TABLE customers (id TEXT PRIMARY KEY, name TEXT, age INT);
 INSERT INTO customers (id, name, age) VALUES ('5', 'Fred', 34);
 INSERT INTO customers (id, name, age) VALUES ('7', 'Sue', 25);
 INSERT INTO customers (id, name, age) VALUES ('2', 'Bill', 51);
 SELECT * FROM customers;
-\q
 
-3.2) Запускаем ksqlDB CLI
-docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
-
-3.3) Устанавливаем чтение с начала темы
-SET 'auto.offset.reset' = 'earliest';
-
-3.4) Создаём коннектор customers_source
+3.2) В первом терминале создаём коннектор customers_source
 CREATE SOURCE CONNECTOR `customers_source` WITH (
     'connector.class' = 'io.debezium.connector.postgresql.PostgresConnector',
     'database.hostname' = 'postgres',
@@ -209,33 +231,34 @@ CREATE SOURCE CONNECTOR `customers_source` WITH (
     'tasks.max' = '1'
 );
 
-3.5) Выводим список коннекторов
+3.3) Выводим список коннекторов
 SHOW CONNECTORS;
 
-3.6) Получаем описание коннектора inventory-connector
+3.4) Получаем описание коннектора inventory-connector
 DESCRIBE CONNECTOR `customers_source`;
 
-3.7) Проверяем топики
+3.5) Проверяем топики
 SHOW TOPICS;
 
-3.8) Выведем содержимое топика
+3.6) Выведем содержимое топика
 PRINT `postgres.public.customers` FROM BEGINNING;
 ^C
 
-3.9) Создаём поток
-CREATE STREAM customers WITH (kafka_topic = 'postgres.public.customers', value_format = 'avro');
+3.7) Создаём поток
+CREATE STREAM customers
+WITH (kafka_topic = 'postgres.public.customers', value_format = 'avro');
 
-3.10) Выведем содержимое потока
+3.8) Выведем содержимое потока
 SELECT * FROM customers EMIT CHANGES;
 
-3.11) Во втором терминале обновляем записи в таблице
-docker exec -ti postgres psql -U postgres
+3.9) Во втором терминале дабавляем, изменяем и удаляем записи
 INSERT INTO customers (id, name, age) VALUES ('3', 'Ann', 18);
 UPDATE customers set age = 35 WHERE id = '5';
 DELETE FROM customers WHERE id = '2';
+SELECT * FROM customers;
 \q
 
-3.12) В первом терминале создаём таблицу
+3.10) В первом терминале создаём таблицу
 ^C
 CREATE TABLE customers_by_key AS
     SELECT id,
@@ -245,8 +268,9 @@ CREATE TABLE customers_by_key AS
     GROUP BY id
     EMIT CHANGES;
 
-3.13) Создадим запрос к таблице
+3.11) Создадим запрос к таблице
 SELECT * FROM customers_by_key;
+^D
 
 
 4) Завершаем работу
@@ -254,4 +278,3 @@ docker compose down
 docker container prune -f
 docker volume prune -f
 docker network prune -f
-
