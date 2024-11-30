@@ -40,12 +40,14 @@ public class Ex102Transaction {
                     b.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE_V2); // 2) закомментируем
                     b.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1000); // 1) увеличим до 5000
                 }));
-             var producer = new Producer("ex102-src-topic", b -> b.key("1").value("message-" + b.no), 100)) {
+             ) {
             Thread.sleep(100);
             Utils.log.info("App Started");
             kafkaStreams.start();
 
-            Thread.sleep(20000);
+            try (var producer = new Producer("ex102-src-topic", b -> b.key("1").value("message-" + b.no), 100)) {
+                Thread.sleep(20000);
+            }
 
             Utils.log.info("Shutting down now");
         }

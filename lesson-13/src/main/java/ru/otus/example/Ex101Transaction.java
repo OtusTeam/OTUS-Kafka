@@ -32,11 +32,14 @@ public class Ex101Transaction {
                 Utils.createStreamsConfig(b -> {
                     b.put(StreamsConfig.APPLICATION_ID_CONFIG, "ex101" + UUID.randomUUID());
                     b.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE_V2);
-                }));
-             var producer = new Producer("ex101-src-topic", b -> b.key("1").value("message-" + b.no), 500)) {
+                }))) {
             Utils.log.info("App Started");
             Thread.sleep(1000);
             kafkaStreams.start();
+
+            try (var producer = new Producer("ex101-src-topic", b -> b.key("1").value("message-" + b.no), 500)) {
+                Thread.sleep(2000);
+            }
 
             Thread.sleep(2000);
 

@@ -43,7 +43,7 @@ public class Ex7TableVsStream {
         Utils.runStockApp(builder, "ex5", new StockProducer(3, 3), b -> {
             b.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, AppSerdes.StockTicker.class);
             //b.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0); // **1
-            //b.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1500); // **2
+            //b.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1000); // **2
         });
     }
 }

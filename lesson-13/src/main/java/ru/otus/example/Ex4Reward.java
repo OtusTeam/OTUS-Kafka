@@ -18,7 +18,7 @@ import ru.otus.utils.Utils;
 
 public class Ex4Reward {
     public static void main(String[] args) throws Exception {
-        Utils.recreatePurchaseTopics(1); // **1
+        Utils.recreatePurchaseTopics(2); // **1
 
         var purchaseSerde = AppSerdes.purchase();
         var rewardAccumulatorSerde = AppSerdes.rewardAccumulator();

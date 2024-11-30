@@ -32,12 +32,13 @@ public class Ex1UpperCaseTransformer {
 */
         Utils.log.info("{}", builder.build().describe());
 
-        try (var kafkaStreams = new KafkaStreams(builder.build(), Utils.createStreamsConfig("ex1"));
-             var producer = new Producer("ex1-src-topic", b -> b.key("1").value("message-" + b.no), 500)) {
+        try (var kafkaStreams = new KafkaStreams(builder.build(), Utils.createStreamsConfig("ex1"))) {
             Utils.log.info("App Started");
             kafkaStreams.start();
 
-            Thread.sleep(2000);
+            try(var producer = new Producer("ex1-src-topic", b -> b.key("1").value("message-" + b.no), 500)) {
+                Thread.sleep(2000);
+            }
 
             Utils.log.info("Shutting down now");
         }

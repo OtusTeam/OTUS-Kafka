@@ -7,6 +7,8 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Printed;
 import org.apache.kafka.streams.kstream.Produced;
 import ru.otus.model.purchase.Purchase;
+import ru.otus.model.purchase.PurchasePattern;
+import ru.otus.model.purchase.RewardAccumulator;
 import ru.otus.serde.AppSerdes;
 import ru.otus.utils.Utils;
 

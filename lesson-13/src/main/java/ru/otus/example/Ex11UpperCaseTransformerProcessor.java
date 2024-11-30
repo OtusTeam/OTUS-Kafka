@@ -20,22 +20,25 @@ public class Ex11UpperCaseTransformerProcessor {
 
         Serde<String> stringSerde = Serdes.String();
 
-        Topology toplogy = new Topology();
-        toplogy
+        Topology topology = new Topology();
+        topology
                 .addSource("source", stringSerde.deserializer(), stringSerde.deserializer(), "ex1-src-topic")
                 .addProcessor("processor", CaseTransformer::new, "source")
                 .addProcessor("logger", Logger::new, "processor")
                 .addSink("sink", "ex1-out-topic", stringSerde.serializer(), stringSerde.serializer(), "processor");
 
 
-        Utils.log.info("{}", toplogy.describe());
+        Utils.log.info("{}", topology.describe());
 
-        try (var kafkaStreams = new KafkaStreams(toplogy, Utils.createStreamsConfig("ex11"));
-             var producer = new Producer("ex1-src-topic", b -> b.key("1").value("message-" + b.no), 500)) {
+        try (var kafkaStreams = new KafkaStreams(topology, Utils.createStreamsConfig("ex11"));
+             ) {
             Utils.log.info("App Started");
             kafkaStreams.start();
 
-            Thread.sleep(2000);
+            try (var producer = new Producer("ex1-src-topic", b -> b.key("1").value("message-" + b.no), 500)) {
+                Thread.sleep(2000);
+            }
+
 
             Utils.log.info("Shutting down now");
         }
