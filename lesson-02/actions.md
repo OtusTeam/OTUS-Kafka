@@ -9,6 +9,16 @@ docker compose start
 docker exec -ti kafka-otuskafka /usr/bin/kafka-topics --create --topic test --partitions 1 --replication-factor 1 --bootstrap-server kafka1:9191
 ```
 
+Создать топик topic1
+```shell
+docker exec -ti kafka-otuskafka /usr/bin/kafka-topics --create --topic topic1 --partitions 1 --replication-factor 1 --bootstrap-server kafka1:9191
+```
+
+Удалить топик test
+```shell
+docker exec -ti kafka-otuskafka /usr/bin/kafka-topics --delete --topic test --bootstrap-server kafka1:9191
+```
+
 Получить список топиков
 ```shell
 docker exec -ti kafka-otuskafka /usr/bin/kafka-topics --list --bootstrap-server kafka1:9191
