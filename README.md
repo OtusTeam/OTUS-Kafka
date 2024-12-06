@@ -13,6 +13,7 @@
 - **10** [Consumer API](lesson-10)
 - **11** [Транзакци](lesson-11)
 - **13** [Kafka Streams](lesson-13)
+- **20** [Spark Streaming](lesson-20)
 - **21** [Kafka Connect](lesson-21)
 - **22** [ksqlDB](lesson-22)
 - **23** [Schema Registry](lesson-23)
