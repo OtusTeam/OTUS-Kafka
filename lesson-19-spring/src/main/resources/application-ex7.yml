@@ -1,0 +1,4 @@
+spring:
+  kafka:
+    producer:
+      transaction-id-prefix: "ex7"
