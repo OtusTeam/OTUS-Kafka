@@ -1,0 +1,21 @@
+{
+    "name": "clients-cdc-connector",
+    "config": {
+        "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+        "database.hostname": "postgres1",
+        "database.port": "5432",
+        "database.user": "postgres",
+        "database.password": "password",
+        "database.dbname": "postgres",
+        "database.server.name": "postgres1",
+        "table.include.list": "public.clients",
+        "topic.prefix": "postgres.cdc",
+        "transforms": "unwrap",
+        "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+        "transforms.unwrap.drop.tombstones": "false",
+        "transforms.unwrap.delete.handling.mode": "rewrite",
+        "plugin.name": "pgoutput",
+        "slot.name": "nr",
+        "tasks.max": "1"
+    }
+}

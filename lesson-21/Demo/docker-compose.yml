@@ -151,3 +151,28 @@ services:
     volumes:
       - ./ch_data:/var/lib/clickhouse/
       - ./ch_logs:/var/log/clickhouse-server/
+
+  postgres1:
+    image: postgres:latest
+    container_name: postgres1
+    hostname: postgres1
+    ports:
+      - "6432:5432"
+    environment:
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./data:/data
+      - ./postgres/custom-config.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+
+  postgres2:
+    image: postgres:latest
+    container_name: postgres2
+    hostname: postgres2
+    ports:
+      - "7432:5432"
+    environment:
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./postgres/custom-config.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
