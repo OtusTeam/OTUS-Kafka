@@ -3,7 +3,7 @@ docker compose up -d
 docker compose ps -a
 
 2) Создаём топик topic-to-copy на первом кластере
-docker exec -ti kafka1 /usr/bin/kafka-topics --create --bootstrap-server kafka1:19092 --replication-factor 1 --partitions 4 --topic topic-to-copy
+docker exec -ti kafka1 /usr/bin/kafka-topics --create --bootstrap-server kafka1:19092 --topic topic-to-copy
 
 3) Отправляем данные в топик topic-to-copy на первом кластере
 docker exec -ti kafka1 /usr/bin/kafka-console-producer --bootstrap-server kafka1:19092 --topic topic-to-copy
@@ -14,16 +14,29 @@ four
 five
 ^D
 
-4) Запускаем MirrorMaker2
+4) Проверяем смещения в топике topic-to-copy на первом кластере
+docker exec -ti kafka1 kafka-get-offsets --topic topic-to-copy --bootstrap-server kafka1:19092
+
+5) Удаляем первые сообщения из топика topic-to-copy на первом кластере
+docker cp deleteme.json kafka1:/tmp/deleteme.json
+docker exec -ti kafka1 kafka-delete-records --bootstrap-server kafka1:19092 --offset-json-file /tmp/deleteme.json
+
+6) Проверяем данные в топике topic-to-copy на первом кластере
+docker exec -ti kafka1 /usr/bin/kafka-console-consumer --topic topic-to-copy --bootstrap-server kafka1-m:19092 --from-beginning --property print.offset=true
+
+7) Открываем второй терминал и запускаем MirrorMaker2
 docker exec -ti kafka1-m /bin/bash
 export KAFKA_LOG4J_OPTS="-Dlog4j.configuration=file:/tmp/config/connect-log4j.properties"
 /usr/bin/connect-mirror-maker /tmp/config/mm.properties
 
-5) Открываем второй терминал и проверяем топик на втором кластере
+8) В первом терминале проверяем топики на втором кластере
 docker exec -ti kafka1-m /usr/bin/kafka-topics --list --bootstrap-server kafka1-m:19292
-docker exec -ti kafka1-m /usr/bin/kafka-console-consumer --topic src.topic-to-copy --bootstrap-server kafka1-m:19292 --from-beginning
+docker exec -ti kafka1-m kafka-get-offsets --topic src.topic-to-copy --bootstrap-server kafka1-m:19292
 
-6) Открываем третий терминал и отправляем данные в топик topic-to-copy на первом кластере
+9) Читаем данные из топика на втором кластере
+docker exec -ti kafka1-m /usr/bin/kafka-console-consumer --topic src.topic-to-copy --bootstrap-server kafka1-m:19292 --from-beginning --property print.offset=true
+
+10) Отправляем данные в топик topic-to-copy на первом кластере
 docker exec -ti kafka1 /usr/bin/kafka-console-producer --bootstrap-server kafka1:19092 --topic topic-to-copy
 2-one
 2-two
@@ -32,7 +45,10 @@ docker exec -ti kafka1 /usr/bin/kafka-console-producer --bootstrap-server kafka1
 2-five
 ^D
 
-7) Останавливаем сервисы
+11) Читаем данные из топика на втором кластере
+docker exec -ti kafka1-m /usr/bin/kafka-console-consumer --topic src.topic-to-copy --bootstrap-server kafka1-m:19292 --from-beginning --property print.offset=true
+
+12) Останавливаем сервисы
 docker compose stop
 docker container prune -f
 docker volume prune -f

@@ -1,0 +1,4 @@
+{"partitions":
+	[{"topic": "topic-to-copy", "partition": 0, "offset": 3}],
+	"version":1
+}
