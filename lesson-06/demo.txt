@@ -43,11 +43,16 @@
     Импортируем дашборд: Dashboards -> New -> Import
 
 2.6) Нагружаем Kafka
-    docker exec -ti kafka1 kafka-consumer-perf-test --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --messages 1000000
-    docker exec -ti kafka1 kafka-producer-perf-test --topic test --num-records 1000000 --record-size 1024 --throughput -1 --producer-props bootstrap.servers=kafka1:9092,kafka2:9092,kafka3:9092
-
+    docker exec -ti kafka1 /bin/bash
+        unset KAFKA_JMX_OPTS
+        unset KAFKA_JMX_PORT
+        unset KAFKA_JMX_HOSTNAME
+        kafka-topics --create --topic test --partitions 3 --replication-factor 3 --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+        kafka-producer-perf-test --topic test --num-records 1000000 --record-size 1024 --throughput -1 --producer-props bootstrap.servers=kafka1:9092,kafka2:9092,kafka3:9092
+        kafka-consumer-perf-test --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --messages 1000000
+        exit
 
 3) Останавливаем Kafka
     docker compose stop
     docker container prune -f
-    docker volume prune -f
+    docker volume prune -a -f

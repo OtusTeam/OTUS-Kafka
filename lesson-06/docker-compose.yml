@@ -126,7 +126,7 @@ services:
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zoo1:2181,zoo2:2181,zoo3:2181/kafka
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://:29092,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:39092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://:9092,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:39092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
@@ -168,7 +168,7 @@ services:
       - ./prometheus:/etc/prometheus
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:10.0.0
     container_name: grafana
     hostname: grafana
     ports:

@@ -137,10 +137,12 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(rate(kafka_topic_partition_current_offset{instance=\"$node:$port\", topic=~\"$topic\"}[1m])) by (topic)",
+          "editorMode": "code",
+          "expr": "sum(rate(kafka_topic_partition_current_offset[1m])) by (topic)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{topic}}",
+          "range": true,
           "refId": "B"
         }
       ],
@@ -232,10 +234,12 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(delta(kafka_topic_partition_current_offset{instance=~'$node:$port', topic=~\"$topic\"}[5m])/5) by (topic)",
+          "editorMode": "code",
+          "expr": "sum(delta(kafka_topic_partition_current_offset[5m])/5) by (topic)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{topic}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -326,10 +330,12 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "kafka_brokers{instance=~'$node:$port'}",
+          "editorMode": "code",
+          "expr": "kafka_brokers",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Number of brokers",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -421,7 +427,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "kafka_topic_partition_oldest_offset{instance=~'$node:$port',topic!=\"__consumer_offsets\"}",
+          "expr": "kafka_topic_partition_oldest_offset{topic!=\"__consumer_offsets\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{topic}}",
@@ -517,7 +523,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "kafka_topic_partition_replicas{instance=~'$node:$port',topic!=\"__consumer_offsets\"}",
+          "expr": "kafka_topic_partition_replicas{topic!=\"__consumer_offsets\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{topic}}",
@@ -613,7 +619,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "kafka_topic_partition_in_sync_replica{instance=~'$node:$port',topic!=\"__consumer_offsets\"}",
+          "expr": "kafka_topic_partition_in_sync_replica{topic!=\"__consumer_offsets\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Replicas-{{topic}}",
@@ -709,7 +715,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "kafka_topic_partition_under_replicated_partition{instance=~'$node:$port',topic!=\"__consumer_offsets\"}",
+          "expr": "kafka_topic_partition_under_replicated_partition{topic!=\"__consumer_offsets\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{topic}}",
@@ -805,7 +811,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "kafka_topic_partition_leader_is_preferred{instance=~'$node:$port',topic!=\"__consumer_offsets\"}",
+          "expr": "kafka_topic_partition_leader_is_preferred{topic!=\"__consumer_offsets\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{topic}}",
@@ -863,7 +869,8 @@
             "steps": [
               {
                 "color": "green",
-                "index": 0
+                "index": 0,
+                "value": null
               },
               {
                 "color": "red",
@@ -905,7 +912,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "kafka_topic_partition_leader{instance=~'$node:$port',topic!=\"__consumer_offsets\"}",
+          "expr": "kafka_topic_partition_leader{topic!=\"__consumer_offsets\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{topic}}",
@@ -952,7 +959,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1016,7 +1024,7 @@
       "type": "barchart"
     }
   ],
-  "refresh": "",
+  "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
   "tags": [

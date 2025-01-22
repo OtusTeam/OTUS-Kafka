@@ -1038,10 +1038,12 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "rate(kafka_network_requestmetrics_totaltimems{instance=\"$node:$port\",job=\"jmx-kafka-exporter\",request=~\"Produce|FetchFollower|FetchConsumer\"}[1m])",
+          "editorMode": "code",
+          "expr": "rate(kafka_network_requestmetrics_totaltimems{request=~\"Produce|FetchFollower|FetchConsumer\"}[1m])",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{request}}-quantile-{{quantile}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -1085,101 +1087,6 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Asynchronous disk log flush and time in ms",
-      "fill": 0,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 24,
-        "x": 0,
-        "y": 183
-      },
-      "hiddenSeries": false,
-      "id": 17,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "hideEmpty": false,
-        "hideZero": false,
-        "max": true,
-        "min": true,
-        "rightSide": true,
-        "show": true,
-        "sort": "current",
-        "sortDesc": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "connected",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "10.0.0",
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "repeatDirection": "v",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "expr": "kafka_log_logflushstats_logflushrateandtimems{instance=\"$node:$port\",job='$job'}",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "log flush time - quantile {{quantile}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeRegions": [],
-      "title": "$node - Asynchronous disk log flush and time in ms",
-      "tooltip": {
-        "shared": true,
-        "sort": 2,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "mode": "time",
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "logBase": 1,
-          "show": true
-        },
-        {
-          "format": "short",
-          "logBase": 1,
-          "show": false
-        }
-      ],
-      "yaxis": {
-        "align": false
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
       "description": "Number of partitions on  the system",
       "fill": 0,
       "fillGradient": 0,
@@ -1187,7 +1094,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 189
+        "y": 183
       },
       "hiddenSeries": false,
       "id": 14,
@@ -1281,7 +1188,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 207
+        "y": 201
       },
       "hiddenSeries": false,
       "id": 8,
@@ -1375,7 +1282,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 225
+        "y": 219
       },
       "hiddenSeries": false,
       "id": 10,
@@ -1469,7 +1376,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 243
+        "y": 237
       },
       "hiddenSeries": false,
       "id": 9,
@@ -1563,7 +1470,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 261
+        "y": 255
       },
       "hiddenSeries": false,
       "id": 12,
