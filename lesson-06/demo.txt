@@ -17,10 +17,6 @@
     - Zookeeper: Remote Process: localhost:10020
     - Kafka: Remote Process: localhost:10030
 
-1.4) Нагружаем Kafka
-    docker exec -ti kafka1 kafka-topics --create --topic test --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --partitions 3 --replication-factor 3
-    docker exec -ti kafka1 kafka-producer-perf-test --topic test --num-records 1000000 --record-size 1024 --throughput -1 --producer-props bootstrap.servers=kafka1:9092,kafka2:9092,kafka3:9092
-
 
 2) Prometheus + Grafana
 2.1) Проверям Kafka exporter
