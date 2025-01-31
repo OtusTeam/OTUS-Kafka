@@ -41,7 +41,7 @@ openssl req -new -x509 -keyout ca-key -out ca-cert -days 365
 keytool -importcert -keystore client.truststore.jks -alias CARoot -file ca-cert
 
 - Добавляем сгенерированный центр сертификации в хранилище доверия брокеров, чтобы брокеры могли доверять этому центру сертификации:
-keytool -importcert -keystore server.truststore.jks -alias CARoot -importcert -file ca-cert
+keytool -importcert -keystore server.truststore.jks -alias CARoot -file ca-cert
 
 3) Подписать сертификат
 Подписать все сертификаты в хранилище ключей с помощью созданного центра сертификации
@@ -172,7 +172,7 @@ KAFKA_OPTS="-Djava.security.auth.login.config=/opt/kafka/private/kafka_server_ja
 
 3) Настроить клиента
 
-- Файл client-sasl.properties
+- Файл client-sasl-ssl.properties
 
 security.protocol=SASL_SSL
 ssl.truststore.location=/var/private/ssl/client.truststore.jks
@@ -184,9 +184,9 @@ sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule require
 
 4) Проверка
 
-kafka-topics.sh --list --bootstrap-server localhost:9094 --command-config client-sasl.properties
-kafka-console-producer.sh --bootstrap-server localhost:9094 --topic test --producer.config client-sasl.properties
-kafka-console-consumer.sh --bootstrap-server localhost:9094 --topic test --consumer.config client-sasl.properties -from-beginning
+kafka-topics.sh --list --bootstrap-server localhost:9094 --command-config client-sasl-ssl.properties
+kafka-console-producer.sh --bootstrap-server localhost:9094 --topic test --producer.config client-sasl-ssl.properties
+kafka-console-consumer.sh --bootstrap-server localhost:9094 --topic test --consumer.config client-sasl-ssl.properties -from-beginning
 
 kafka-server-stop.sh
 zookeeper-server-stop.sh
