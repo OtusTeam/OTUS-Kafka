@@ -1,4 +1,6 @@
-# Otus Kafka
+# Otus Kafka 
+
+### Kafka-2025-02 
 
 Материалы для курса [Apache Kafka](https://otus.ru/lessons/kafka/)
 
