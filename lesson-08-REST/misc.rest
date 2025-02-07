@@ -1,0 +1,8 @@
+### Список топиков
+GET http://localhost:8082/topics
+
+### Информация о топике
+GET http://localhost:8082/topics/jsontest
+
+### Информация о партициях топика
+GET http://localhost:8082/topics/jsontest/partitions

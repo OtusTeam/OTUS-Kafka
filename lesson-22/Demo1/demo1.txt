@@ -1,0 +1,66 @@
+1) Запускаем сервисы
+docker compose up -d
+
+2) Создаём топик users
+docker exec broker kafka-topics --create --topic users --bootstrap-server broker:9092
+
+3) Проверяем список топиков
+docker exec broker kafka-topics --list --bootstrap-server broker:9092
+
+4) Запускаем ksqlDB CLI
+docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
+
+5) Устанавливаем чтение с начала темы
+SET 'auto.offset.reset' = 'earliest';
+
+6) Проверяем топики
+SHOW TOPICS;
+
+7) Создаём поток, который читает топик users
+CREATE STREAM users (ROWKEY INT KEY, USERNAME VARCHAR) WITH (KAFKA_TOPIC='users', VALUE_FORMAT='JSON');
+
+8) Работа с потоками
+SHOW STREAMS;
+SHOW STREAMS EXTENDED;
+DESCRIBE users;
+DESCRIBE users EXTENDED;
+
+9) Добавим записи в поток
+INSERT INTO users (username) VALUES ('Alex');
+INSERT INTO users (username) VALUES ('Barbara');
+INSERT INTO users (username) VALUES ('Carl');
+INSERT INTO users (username) VALUES ('Fiona');
+
+10) Прочитаем записи (pull-запрос)
+SELECT * FROM users;
+
+11) Создадим push-запрос
+SELECT 'Hello, ' + USERNAME AS GREETING FROM users EMIT CHANGES;
+
+12) Открываем второй терминал, добавляем записи в поток
+docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
+SET 'auto.offset.reset' = 'earliest';
+INSERT INTO users (username) VALUES ('Mary');
+INSERT INTO users (username) VALUES ('Garry');
+INSERT INTO users (username) VALUES ('Ann');
+
+13) В первом терминале посмотрим на метаданные
+^C
+SELECT ROWTIME, ROWOFFSET, ROWPARTITION, * FROM users EMIT CHANGES;
+
+14) Во втором терминале работаем с запросами
+LIST QUERIES;
+SHOW QUERIES EXTENDED;
+EXPLAIN { идентификатор_запроса };
+
+15) Работаем с функциями
+SHOW FUNCTIONS;
+DESCRIBE FUNCTION <идентификатор>;
+
+16) Завершаем push-запрос
+TERMINATE ALL;
+
+17) Завершаем работу
+docker compose stop
+docker container prune -f
+docker volume prune -f

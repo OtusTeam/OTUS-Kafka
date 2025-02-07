@@ -1,0 +1,109 @@
+1) Запускаем сервисы
+docker compose up -d
+
+2) Проверяем контейнеры
+docker compose ps -a
+
+3) Проверям логи Kafka Connect
+docker logs -f connect
+^C
+
+4) Проверяем статус и плагины коннекторов
+curl http://localhost:8083 | jq
+curl http://localhost:8083/connector-plugins | jq
+
+5) Проверяем список топиков
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+
+6) Создадим таблицу в PostgreSQL и запишем в неё данные
+docker exec -ti postgres psql -U postgres
+CREATE TABLE customers (id TEXT PRIMARY KEY, name TEXT, age INT);
+INSERT INTO customers (id, name, age) VALUES ('5', 'Fred', 34);
+INSERT INTO customers (id, name, age) VALUES ('7', 'Sue', 25);
+INSERT INTO customers (id, name, age) VALUES ('2', 'Bill', 51);
+SELECT * FROM customers;
+\q
+
+7) Запускаем ksqlDB CLI
+docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
+
+8) Устанавливаем чтение с начала темы
+SET 'auto.offset.reset' = 'earliest';
+
+9) Создаём коннектор customers_source
+CREATE SOURCE CONNECTOR `customers_source` WITH (
+    'connector.class' = 'io.debezium.connector.postgresql.PostgresConnector',
+    'database.hostname' = 'postgres',
+    'database.port' = '5432',
+    'database.user' = 'postgres',
+    'database.password' = 'password',
+    'database.dbname' = 'postgres',
+    'database.server.name' = 'postgres',
+    'table.whitelist' = 'public.customers',
+    'topic.prefix' = 'postgres',
+    'transforms' = 'unwrap',
+    'transforms.unwrap.type' = 'io.debezium.transforms.ExtractNewRecordState',
+    'transforms.unwrap.drop.tombstones' = 'false',
+    'transforms.unwrap.delete.handling.mode' = 'rewrite',
+    'plugin.name' = 'pgoutput',
+    'tasks.max' = '1'
+);
+
+10) Выводим список коннекторов
+SHOW CONNECTORS;
+
+11) Получаем описание коннектора inventory-connector
+DESCRIBE CONNECTOR `customers_source`;
+
+12) Проверяем топики
+SHOW TOPICS;
+
+13) Выведем содержимое топика
+PRINT `postgres.public.customers` FROM BEGINNING;
+^C
+
+14) Создаём поток
+CREATE STREAM customers WITH (kafka_topic = 'postgres.public.customers', value_format = 'avro');
+
+15) Выведем содержимое потока
+SELECT * FROM customers EMIT CHANGES;
+
+16) Во втором терминале обновляем записи в таблице
+docker exec -ti postgres psql -U postgres
+INSERT INTO customers (id, name, age) VALUES ('3', 'Ann', 18);
+UPDATE customers set age = 35 WHERE id = '5';
+DELETE FROM customers WHERE id = '2';
+\q
+
+17) В первом терминале создаём таблицу
+^C
+CREATE TABLE customers_by_key AS
+    SELECT id,
+           latest_by_offset(name) AS name,
+           latest_by_offset(age) AS age
+    FROM customers
+    GROUP BY id
+    EMIT CHANGES;
+
+18) Создадим запрос к таблице
+SELECT * FROM customers_by_key;
+
+19) Удаляем коннектор
+DROP CONNECTOR `customers_source`;
+^D
+
+20) Завершаем работу
+docker compose stop
+docker container prune -f
+docker volume prune -f
+
+
+CREATE TABLE customers_by_key_5 AS
+    SELECT id,
+           latest_by_offset(name) AS name,
+           latest_by_offset(age) AS age
+    FROM customers
+    GROUP BY id
+    HAVING latest_by_offset(__DELETED) = 'false'
+    EMIT CHANGES;
+

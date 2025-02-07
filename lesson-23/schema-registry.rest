@@ -1,0 +1,48 @@
+### Создать subject и первую версию схемы
+POST http://localhost:8081/subjects/some/versions
+Content-Type: application/json
+
+{
+  "schema": "{\"type\": \"record\",  \"name\": \"Student\",  \"fields\": [   {\"name\": \"id\",\"type\": \"int\"}]}"
+}
+
+### Если схема уже есть - получить id
+POST http://localhost:8081/subjects/some/versions
+Content-Type: application/json
+
+{
+  "schema": "{\"type\": \"record\",  \"name\": \"Student\",  \"fields\": [   {\"name\": \"id\",\"type\": \"int\"}]}"
+}
+
+### Создать вторую версию
+POST http://localhost:8081/subjects/some/versions
+Content-Type: application/json
+
+{
+  "schema": "{\"type\": \"record\",  \"name\": \"Student\",  \"fields\": [   {\"name\": \"id\",\"type\": \"int\"}, {\"name\":\"email\",\"type\":[\"string\", \"null\"],\"default\":null} ]}"
+}
+
+### Получить subject
+GET http://localhost:8081/subjects/some/versions
+
+### Получить схему по subject и версии
+GET http://localhost:8081/subjects/some/versions/2
+
+### Получить схему по id
+GET http://localhost:8081/schemas/ids/2
+
+### Создать третью версию (несовместима)
+POST http://localhost:8081/subjects/some/versions
+Content-Type: application/json
+
+{
+  "schema": "{\"type\": \"record\",  \"name\": \"Student\",  \"fields\": [   {\"name\": \"id\",\"type\": \"int\"}, {\"name\":\"email\",\"type\":[\"string\", \"null\"],\"default\":null},  {\"name\": \"phone\",\"type\": \"int\"} ]}"
+}
+
+### Получить все subjects
+
+GET http://localhost:8081/subjects
+
+
+### Получить compatibility
+GET http://localhost:8081/config

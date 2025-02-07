@@ -27,6 +27,7 @@ class Transformer extends AbstractConsumer {
         producer.initTransactions();
 
         this.config.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
+        this.config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         this.config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         this.config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         this.thread.start();

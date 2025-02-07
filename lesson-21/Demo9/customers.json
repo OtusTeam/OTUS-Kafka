@@ -1,0 +1,23 @@
+{
+    "name": "customers-connector",
+    "config": {
+        "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+        "database.hostname": "postgres",
+        "database.port": "5432",
+        "database.user": "postgres",
+        "database.password": "password",
+        "database.dbname": "postgres",
+        "database.server.name": "postgres",
+        "table.whitelist": "public.customers",
+        "topic.prefix": "postgres",
+        "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "key.converter.schemas.enable": "false",
+        "value.converter.schemas.enable": "false",
+        "transforms": "flatten",
+        "transforms.flatten.type": "org.apache.kafka.connect.transforms.Flatten$Value",
+        "transforms.flatten.delimiter": ".",
+        "plugin.name": "pgoutput",
+        "tasks.max": "1"
+        }
+   }

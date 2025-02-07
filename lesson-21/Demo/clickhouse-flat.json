@@ -1,0 +1,21 @@
+{
+    "name": "clickhouse-flat-connector",
+    "config": {
+      "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
+      "hostname": "clickhouse",
+      "port": "8123",
+      "ssl": "false",
+      "database": "default",
+      "username": "username",
+      "password": "password",
+      "topics": "postgres.flat.public.customers",
+      "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+      "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+      "key.converter.schemas.enable": "false",
+      "value.converter.schemas.enable": "false",
+      "topic2TableMap": "postgres.flat.public.customers=customers_flat",
+      "errors.tolerance": "all",
+      "errors.deadletterqueue.topic.name": "clickhouse-flat-dlq",
+      "tasks.max": "1"
+    }
+}

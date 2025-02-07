@@ -1,0 +1,28 @@
+1) Kafka с Zookeeper
+
+1.1) Проверяем Zookeeper
+zookeeper-shell.sh localhost:2181
+> ls /
+^D
+
+1.2) Zookeeper как сервис
+/usr/lib/systemd/system/zookeeper.service
+
+1.3) Проверяем Kafka
+kafka-cluster.sh cluster-id --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+
+1.4) Kafka как сервис
+/usr/lib/systemd/system/kafka.service
+
+2) Kafka с KRaft
+
+2.1) Создаём CLUSTER ID (на одном узле):
+export KAFKA_CLUSTER_ID="$(kafka-storage.sh random-uuid)"
+echo $KAFKA_CLUSTER_ID
+
+2.2) Форматируем log каталог (на каждом узле):
+kafka-storage.sh format -t $KAFKA_CLUSTER_ID -c config/kraft/server.properties
+
+2.3) Проверяем Kafka с KRaft
+kafka-cluster.sh cluster-id --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
+kafka-metadata-shell.sh --snapshot /opt/kafka/data/kraft-combined-logs/bootstrap.checkpoint

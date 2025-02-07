@@ -1,0 +1,82 @@
+Демо 8. PostgreSQL to ClickHouse
+
+1) Запускаем Kafka, Kafka Connect, Postgres и ClickHouse
+docker compose up -d
+docker compose ps -a
+
+2) Проверям логи Kafka Connect
+docker logs -f connect
+^C
+
+3) Проверяем статус и плагины коннекторов
+curl http://localhost:8083 | jq
+curl http://localhost:8083/connector-plugins | jq
+
+4) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+
+5) Подключаемся к Postgres
+docker exec -ti -e PGOPTIONS="--search_path=inventory" postgres psql -U postgres
+\dt
+SELECT * FROM customers;
+\q
+
+6) Создаём коннектор customers
+curl -X POST --data-binary "@customers.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+7) Проверяем коннектор customers
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/customers-connector/status | jq
+
+8) Проверяем топики
+docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094
+
+9) Читаем топик dbserver1.inventory.customers
+docker exec kafka1 kafka-console-consumer --topic postgres.inventory.customers --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --from-beginning --property print.offset=true --property print.key=true
+^C
+
+10) Подключаемся к ClickHouse и создаём таблицы
+docker exec -ti clickhouse clickhouse-client
+DROP TABLE IF EXISTS customers;
+CREATE TABLE customers (
+    id Int32,
+    first_name String,
+    last_name String,
+    email String,
+    `__deleted` String
+)
+ENGINE = ReplacingMergeTree
+PRIMARY KEY (id)
+\q
+
+11) Создаём коннектор clickhouse
+curl -X POST --data-binary "@clickhouse.json" -H "Content-Type: application/json" http://localhost:8083/connectors | jq
+
+12) Проверяем коннектор clickhouse
+curl http://localhost:8083/connectors | jq
+curl http://localhost:8083/connectors/clickhouse-connector/status | jq
+
+13) Подключаемся к ClickHouse и проверяем таблицу
+docker exec -ti clickhouse clickhouse-client
+SELECT * FROM customers;
+\q
+
+14) Добавляем запись в таблицу
+docker exec -ti -e PGOPTIONS="--search_path=inventory" postgres psql -U postgres
+INSERT INTO customers VALUES (1005, 'Bill', 'Gates', 'bill@ms.com');
+SELECT * FROM customers;
+\q
+
+15) Подключаемся к ClickHouse и проверяем таблицу
+docker exec -ti clickhouse clickhouse-client
+SELECT * FROM customers;
+\q
+
+16) Удаляем коннектор
+curl -X DELETE http://localhost:8083/connectors/clickhouse-connector
+curl -X DELETE http://localhost:8083/connectors/customers-connector
+
+17) Останавливаем Kafka и Kafka Connect
+docker compose stop
+docker container prune -f
+docker volume prune -f

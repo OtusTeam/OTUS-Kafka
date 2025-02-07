@@ -1,0 +1,20 @@
+{
+    "name": "clients-sink-connector",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "connection.url": "jdbc:postgresql://postgres2:5432/postgres",
+        "connection.user": "postgres",
+        "connection.password": "password",
+        "connection.ds.pool.size": 5,
+        "topics": "postgres.cdc.public.clients",
+        "table.name.format": "public.clients",
+        "delete.enabled": "true",
+        "auto.create": "true",
+        "auto.evolve": "true",
+        "insert.mode": "upsert",
+        "insert.mode.databaselevel": true,
+        "pk.mode" : "record_key",
+        "pk.fields": "id",
+        "tasks.max": "1"
+    }
+}

@@ -39,3 +39,14 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+###
+**/.bsp/
+**/project/project/
+**/project/target/
+**/target
+**/classes
+
+**/.clj-kondo
+**/.lsp/
+
