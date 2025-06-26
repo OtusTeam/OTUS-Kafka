@@ -105,8 +105,8 @@ ssl.truststore.location=client.truststore.jks
 ssl.truststore.password=password
 
 2.3) Запускаем ZooKeeper и брокер Kafka с SSL
-zookeeper-server-start.sh -daemon /opt/kafka/config/zookeeper.properties
-kafka-server-start.sh -daemon server-ssl.properties
+zookeeper-server-start.sh -daemon config/zookeeper.properties
+kafka-server-start.sh -daemon config/server-ssl.properties
 
 2.4) Подключаемся клиентом по SSL
 kafka-topics.sh --list --bootstrap-server localhost:9093 --command-config client-ssl.properties
@@ -150,8 +150,8 @@ ssl.keystore.password=password
 ssl.key.password=password
 
 3.3) Запускаем ZooKeeper и брокер Kafka с SSL
-zookeeper-server-start.sh -daemon /opt/kafka/config/zookeeper.properties
-kafka-server-start.sh -daemon server-ssl-auth.properties
+zookeeper-server-start.sh -daemon config/zookeeper.properties
+kafka-server-start.sh -daemon config/server-ssl-auth.properties
 
 3.4) Подключаемся клиентом по SSL
 - Попробуем подключиться без сертификата
@@ -188,7 +188,7 @@ Server {
 };
 
 - Запускаем ZooKeeper
-KAFKA_OPTS="-Djava.security.auth.login.config=zookeeper_jaas.conf" zookeeper-server-start.sh -daemon zookeeper-sasl.properties
+KAFKA_OPTS="-Djava.security.auth.login.config=/opt/kafka/private/zookeeper_jaas.conf" zookeeper-server-start.sh -daemon config/zookeeper-sasl.properties
 
 
 4.2) Подключение к брокеру Kafka по SASL_SSL
@@ -223,7 +223,7 @@ Client {
 };
 
 - Запускаем брокер Kafka
-KAFKA_OPTS="-Djava.security.auth.login.config=kafka_server_jaas.conf" kafka-server-start.sh -daemon server-sasl-ssl.properties
+KAFKA_OPTS="-Djava.security.auth.login.config=/opt/kafka/private/kafka_server_jaas.conf" kafka-server-start.sh -daemon config/server-sasl-ssl.properties
 
 4.2.2) Настраиваем клиента
 - Создаём файл client-sasl-ssl.properties
@@ -255,7 +255,7 @@ sasl.mechanism.inter.broker.protocol=PLAIN
 sasl.enabled.mechanisms=PLAIN
 
 - Запускаем брокер Kafka
-KAFKA_OPTS="-Djava.security.auth.login.config=kafka_server_jaas.conf" kafka-server-start.sh -daemon server-sasl-plain.properties
+KAFKA_OPTS="-Djava.security.auth.login.config=/opt/kafka/private/kafka_server_jaas.conf" kafka-server-start.sh -daemon config/server-sasl-plain.properties
 
 4.3.2) Настраиваем клиента
 - Создаём файл client-sasl-plain.properties
@@ -290,13 +290,13 @@ allow.everyone.if.no.acl.found=true
 super.users=User:client
 
 5.2) Запускаем ZooKeeper и брокер Kafka
-KAFKA_OPTS="-Djava.security.auth.login.config=zookeeper_jaas.conf" zookeeper-server-start.sh -daemon zookeeper-sasl.properties
-KAFKA_OPTS="-Djava.security.auth.login.config=kafka_server_jaas.conf" kafka-server-start.sh -daemon server-acl-plain.properties
+KAFKA_OPTS="-Djava.security.auth.login.config=/opt/kafka/private/zookeeper_jaas.conf" zookeeper-server-start.sh -daemon config/zookeeper-sasl.properties
+KAFKA_OPTS="-Djava.security.auth.login.config=/opt/kafka/private/kafka_server_jaas.conf" kafka-server-start.sh -daemon config/server-acl.properties
 
 5.3) Подключаемся клиентом с аутентификацией SASL_PLAINTEXT и создаём ACL
 kafka-topics.sh --list --bootstrap-server localhost:9094 --command-config client-sasl-plain.properties
 kafka-acls.sh --bootstrap-server localhost:9094 --list --command-config client-sasl-plain.properties
-kafka-acls.sh --bootstrap-server localhost:9094 --add --allow-principal User:Bob --operation Write --topic test --command-config client-sasl-plain.properties
+kafka-acls.sh --bootstrap-server localhost:9094 --add --allow-principal User:A2 --operation Write --topic test --command-config client-sasl-plain.properties
 kafka-acls.sh --bootstrap-server localhost:9094 --add --allow-principal User:Alice --operation Read --topic test --command-config client-sasl-plain.properties
 kafka-acls.sh --bootstrap-server localhost:9094 --list --command-config client-sasl-plain.properties
 
@@ -365,8 +365,8 @@ allow.everyone.if.no.acl.found=true
 super.users=User:client
 
 6.2) Запускаем ZooKeeper и брокер Kafka
-KAFKA_OPTS="-Djava.security.auth.login.config=zookeeper_jaas.conf" zookeeper-server-start.sh -daemon zookeeper-sasl.properties
-KAFKA_OPTS="-Djava.security.auth.login.config=kafka_server_jaas.conf" kafka-server-start.sh -daemon server-acl-ssl.properties
+KAFKA_OPTS="-Djava.security.auth.login.config=/opt/kafka/private/zookeeper_jaas.conf" zookeeper-server-start.sh -daemon config/zookeeper-sasl.properties
+KAFKA_OPTS="-Djava.security.auth.login.config=/opt/kafka/private/kafka_server_jaas.conf" kafka-server-start.sh -daemon config/server-acl-ssl.properties
 
 6.3) Подключаемся клиентом с аутентификацией SASL_SSL и создаём ACL
 kafka-topics.sh --list --bootstrap-server localhost:9094 --command-config client-sasl-ssl.properties
