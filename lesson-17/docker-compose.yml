@@ -14,7 +14,7 @@ services:
 
   kafka:
     restart: on-failure
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.2.15
     container_name: otus-kafka
     hostname: kafka
     ports:

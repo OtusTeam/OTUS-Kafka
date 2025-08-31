@@ -5,16 +5,16 @@ services:
     container_name: zoo1
     hostname: zoo1
     ports:
-      - 12181:2181
+      - 2181:2181
     environment:
       ZOO_MY_ID: 1
 
   kafka1:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.2.15
     container_name: kafka1
     hostname: kafka1
     ports:
-      - "19092:19092"
+      - 19092:19092
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -27,11 +27,11 @@ services:
       - zookeeper
 
   kafka2:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.2.15
     container_name: kafka2
     hostname: kafka2
     ports:
-      - "29092:29092"
+      - 29092:29092
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -44,11 +44,11 @@ services:
       - zookeeper
 
   kafka3:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.2.15
     container_name: kafka3
     hostname: kafka3
     ports:
-      - "39092:39092"
+      - 39092:39092
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -65,7 +65,7 @@ services:
     container_name: schema
     hostname: schema
     ports:
-      - "8081:8081"
+      - 8081:8081
     depends_on:
       - zookeeper
       - kafka1

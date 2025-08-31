@@ -4,7 +4,7 @@ services:
     container_name: kafka1
     hostname: kafka1
     ports:
-      - "19092:19092"
+      - 19092:19092
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
@@ -22,7 +22,7 @@ services:
     container_name: kafka2
     hostname: kafka2
     ports:
-      - "29092:29092"
+      - 29092:29092
     environment:
       KAFKA_NODE_ID: 2
       KAFKA_PROCESS_ROLES: 'broker,controller'
@@ -40,7 +40,7 @@ services:
     container_name: kafka3
     hostname: kafka3
     ports:
-      - "39092:39092"
+      - 39092:39092
     environment:
       KAFKA_NODE_ID: 3
       KAFKA_PROCESS_ROLES: 'broker,controller'

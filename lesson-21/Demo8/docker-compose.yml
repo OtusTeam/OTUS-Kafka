@@ -10,7 +10,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
 
   kafka1:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.2.15
     hostname: kafka1
     container_name: kafka1
     ports:
@@ -27,7 +27,7 @@ services:
       - zookeeper
 
   kafka2:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.2.15
     container_name: kafka2
     hostname: kafka2
     ports:
@@ -44,7 +44,7 @@ services:
       - zookeeper
 
   kafka3:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.2.15
     container_name: kafka3
     hostname: kafka3
     ports:

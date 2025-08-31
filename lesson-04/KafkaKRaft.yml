@@ -1,8 +1,6 @@
-version: '2.1'
-
 services:
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: apache/kafka:latest
     container_name: kafka
     hostname: kafka
     ports:

@@ -5,16 +5,16 @@ services:
     container_name: zoo1
     hostname: zoo1
     ports:
-      - 12181:2181
+      - 2181:2181
     environment:
       ZOO_MY_ID: 1
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.2.15
     container_name: kafka
     hostname: kafka
     ports:
-      - "9092:9092"
+      - 9092:9092
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181

@@ -10,7 +10,7 @@ services:
       ZOO_MY_ID: 1
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.2.15
     container_name: kafka
     hostname: kafka
     ports:
