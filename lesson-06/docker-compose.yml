@@ -27,14 +27,14 @@ services:
     ports:
       - 22181:2181
       - 28080:8080
-      - 20020:10020
+      - 20020:20020
     environment:
       ZOO_MY_ID: 2
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
       ZOO_ADMINSERVER_ENABLED: true
       ZOO_4LW_COMMANDS_WHITELIST: "*"
-      JMX_PORT: 10020
-      JVMFLAGS: "-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=10020 -Dcom.sun.management.jmxremote.rmi.port=10020 -Djava.rmi.server.hostname=0.0.0.0 -Djava.net.preferIPv4Stack=true"
+      JMX_PORT: 20020
+      JVMFLAGS: "-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=20020 -Dcom.sun.management.jmxremote.rmi.port=20020 -Djava.rmi.server.hostname=0.0.0.0 -Djava.net.preferIPv4Stack=true"
     volumes:
       - zoo2-data:/data
       - zoo2-datalog:/datalog
@@ -47,14 +47,14 @@ services:
     ports:
       - 32181:2181
       - 38080:8080
-      - 30020:10020
+      - 20120:20120
     environment:
       ZOO_MY_ID: 3
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
       ZOO_ADMINSERVER_ENABLED: true
       ZOO_4LW_COMMANDS_WHITELIST: "*"
-      JMX_PORT: 10020
-      JVMFLAGS: "-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=10020 -Dcom.sun.management.jmxremote.rmi.port=10020 -Djava.rmi.server.hostname=0.0.0.0 -Djava.net.preferIPv4Stack=true"
+      JMX_PORT: 20120
+      JVMFLAGS: "-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=20120 -Dcom.sun.management.jmxremote.rmi.port=20120 -Djava.rmi.server.hostname=0.0.0.0 -Djava.net.preferIPv4Stack=true"
     volumes:
       - zoo3-data:/data
       - zoo3-datalog:/datalog
@@ -78,7 +78,7 @@ services:
       KAFKA_JMX_PORT: 10030
       KAFKA_JMX_HOSTNAME: localhost
       KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=10030 -Dcom.sun.management.jmxremote.rmi.port=10030 -Djava.rmi.server.hostname=0.0.0.0 -Djava.net.preferIPv4Stack=true"
-      EXTRA_ARGS: "-javaagent:/opt/kafka/jmx_javaagent/jmx_prometheus_javaagent-0.20.0.jar=7071:/opt/kafka/jmx_javaagent/kafka-2_0_0.yml"
+      KAFKA_OPTS: "-javaagent:/opt/kafka/jmx_javaagent/jmx_prometheus_javaagent-1.4.0.jar=7071:/opt/kafka/jmx_javaagent/kafka-2_0_0.yml"
     volumes:
       - kafka1-data:/var/lib/kafka/data
       - ./jmx_exporter:/opt/kafka/jmx_javaagent
@@ -94,7 +94,7 @@ services:
     ports:
       - 29092:9092
       - 27072:7071
-      - 20030:10030
+      - 10130:10130
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zoo1:2181,zoo2:2181,zoo3:2181/kafka
@@ -103,10 +103,10 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
-      KAFKA_JMX_PORT: 10030
+      KAFKA_JMX_PORT: 10130
       KAFKA_JMX_HOSTNAME: localhost
-      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=10020 -Dcom.sun.management.jmxremote.rmi.port=10020 -Djava.rmi.server.hostname=0.0.0.0 -Djava.net.preferIPv4Stack=true"
-      EXTRA_ARGS: "-javaagent:/opt/kafka/jmx_javaagent/jmx_prometheus_javaagent-0.20.0.jar=7071:/opt/kafka/jmx_javaagent/kafka-2_0_0.yml"
+      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=10130 -Dcom.sun.management.jmxremote.rmi.port=10130 -Djava.rmi.server.hostname=0.0.0.0 -Djava.net.preferIPv4Stack=true"
+      KAFKA_OPTS: "-javaagent:/opt/kafka/jmx_javaagent/jmx_prometheus_javaagent-1.4.0.jar=7071:/opt/kafka/jmx_javaagent/kafka-2_0_0.yml"
     volumes:
       - kafka2-data:/var/lib/kafka/data
       - ./jmx_exporter:/opt/kafka/jmx_javaagent
@@ -122,7 +122,7 @@ services:
     ports:
       - 39092:9092
       - 37073:7071
-      - 30030:10030
+      - 10230:10230
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zoo1:2181,zoo2:2181,zoo3:2181/kafka
@@ -131,10 +131,10 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
-      KAFKA_JMX_PORT: 10030
+      KAFKA_JMX_PORT: 10230
       KAFKA_JMX_HOSTNAME: localhost
-      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=10020 -Dcom.sun.management.jmxremote.rmi.port=10020 -Djava.rmi.server.hostname=0.0.0.0 -Djava.net.preferIPv4Stack=true"
-      EXTRA_ARGS: "-javaagent:/opt/kafka/jmx_javaagent/jmx_prometheus_javaagent-0.20.0.jar=7071:/opt/kafka/jmx_javaagent/kafka-2_0_0.yml"
+      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=10230 -Dcom.sun.management.jmxremote.rmi.port=10230 -Djava.rmi.server.hostname=0.0.0.0 -Djava.net.preferIPv4Stack=true"
+      KAFKA_OPTS: "-javaagent:/opt/kafka/jmx_javaagent/jmx_prometheus_javaagent-1.4.0.jar=7071:/opt/kafka/jmx_javaagent/kafka-2_0_0.yml"
     volumes:
       - kafka3-data:/var/lib/kafka/data
       - ./jmx_exporter:/opt/kafka/jmx_javaagent
