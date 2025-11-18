@@ -17,36 +17,36 @@ SET 'auto.offset.reset' = 'earliest';
 SHOW TOPICS;
 
 7) Создаём поток, который читает топик users
-CREATE STREAM users (ROWKEY INT KEY, USERNAME VARCHAR) WITH (KAFKA_TOPIC='users', VALUE_FORMAT='JSON');
+CREATE STREAM userstream (ROWKEY INT KEY, USERNAME VARCHAR) WITH (KAFKA_TOPIC='users', VALUE_FORMAT='JSON');
 
 8) Работа с потоками
 SHOW STREAMS;
 SHOW STREAMS EXTENDED;
-DESCRIBE users;
-DESCRIBE users EXTENDED;
+DESCRIBE userstream;
+DESCRIBE userstream EXTENDED;
 
 9) Добавим записи в поток
-INSERT INTO users (username) VALUES ('Alex');
-INSERT INTO users (username) VALUES ('Barbara');
-INSERT INTO users (username) VALUES ('Carl');
-INSERT INTO users (username) VALUES ('Fiona');
+INSERT INTO userstream (username) VALUES ('Alex');
+INSERT INTO userstream (username) VALUES ('Barbara');
+INSERT INTO userstream (username) VALUES ('Carl');
+INSERT INTO userstream (username) VALUES ('Fiona');
 
 10) Прочитаем записи (pull-запрос)
-SELECT * FROM users;
+SELECT * FROM userstream;
 
 11) Создадим push-запрос
-SELECT 'Hello, ' + USERNAME AS GREETING FROM users EMIT CHANGES;
+SELECT 'Hello, ' + USERNAME AS GREETING FROM userstream EMIT CHANGES;
 
 12) Открываем второй терминал, добавляем записи в поток
 docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
 SET 'auto.offset.reset' = 'earliest';
-INSERT INTO users (username) VALUES ('Mary');
-INSERT INTO users (username) VALUES ('Garry');
-INSERT INTO users (username) VALUES ('Ann');
+INSERT INTO userstream (username) VALUES ('Mary');
+INSERT INTO userstream (username) VALUES ('Garry');
+INSERT INTO userstream (username) VALUES ('Ann');
 
 13) В первом терминале посмотрим на метаданные
 ^C
-SELECT ROWTIME, ROWOFFSET, ROWPARTITION, * FROM users EMIT CHANGES;
+SELECT ROWTIME, ROWOFFSET, ROWPARTITION, * FROM userstream EMIT CHANGES;
 
 14) Во втором терминале работаем с запросами
 LIST QUERIES;

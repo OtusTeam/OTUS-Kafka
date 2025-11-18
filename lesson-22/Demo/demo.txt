@@ -28,39 +28,39 @@ SET 'auto.offset.reset' = 'earliest';
 SHOW TOPICS;
 
 1.5) Создаём поток, который читает топик users
-CREATE STREAM users (ROWKEY INT KEY, USERNAME VARCHAR)
+CREATE STREAM usersStream (ROWKEY INT KEY, USERNAME VARCHAR)
 WITH (KAFKA_TOPIC='users', VALUE_FORMAT='JSON', PARTITIONS=3);
 
 1.6) Работа с потоками
 SHOW STREAMS;
 SHOW STREAMS EXTENDED;
-DESCRIBE users;
-DESCRIBE users EXTENDED;
+DESCRIBE usersStream;
+DESCRIBE usersStream EXTENDED;
 
 1.7) Добавим записи в поток
-INSERT INTO users VALUES (1, 'Alex');
-INSERT INTO users VALUES (2, 'Barbara');
-INSERT INTO users VALUES (3, 'Carl');
-INSERT INTO users VALUES (4, 'Fiona');
+INSERT INTO usersStream VALUES (1, 'Alex');
+INSERT INTO usersStream VALUES (2, 'Barbara');
+INSERT INTO usersStream VALUES (3, 'Carl');
+INSERT INTO usersStream VALUES (4, 'Fiona');
 
 1.8) Прочитаем записи (pull-запрос) в потоке
-SELECT * FROM users;
+SELECT * FROM usersStream;
 
 1.9) Прочитаем записи в топике
 PRINT users FROM BEGINNING;
 
 1.10) Создадим push-запрос
-SELECT 'Hello, ' + USERNAME AS GREETING FROM users EMIT CHANGES;
+SELECT 'Hello, ' + USERNAME AS GREETING FROM usersStream EMIT CHANGES;
 
 1.11) Во втором терминале добавляем записи в поток
 docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
-INSERT INTO users VALUES (5, 'Mary');
-INSERT INTO users VALUES (6, 'Garry');
-INSERT INTO users VALUES (7, 'Ann');
+INSERT INTO usersStream VALUES (5, 'Mary');
+INSERT INTO usersStream VALUES (6, 'Garry');
+INSERT INTO usersStream VALUES (7, 'Ann');
 
 1.12) В первом терминале посмотрим на метаданные
 ^C
-SELECT ROWTIME, ROWOFFSET, ROWPARTITION, * FROM users EMIT CHANGES;
+SELECT ROWTIME, ROWOFFSET, ROWPARTITION, * FROM usersStream EMIT CHANGES;
 
 1.13) Во втором терминале работаем с запросами
 LIST QUERIES;
@@ -110,8 +110,6 @@ INSERT INTO PaymentStream (id, purchaseId, status, right_ts) VALUES (104, 4, 'OK
 1.20) Проверяем объединённый поток
 SELECT * FROM PaymentPurchaseStream;
 
-1.21) Прочитаем записи в топике
-PRINT PaymentPurchaseTopic FROM BEGINNING;
 
 ## Агрегирование
 
@@ -158,6 +156,7 @@ INSERT INTO titles (title) values ('Stranger Things');
 INSERT INTO titles (title) values ('Black Mirror');
 INSERT INTO titles (title) values ('The Office');
 SELECT * FROM titles;
+\q
 
 2.4) В первом терминале создаём коннектор postgres-source
 CREATE SOURCE CONNECTOR `postgres-source` WITH (
@@ -191,7 +190,7 @@ DESCRIBE titles EXTENDED;
 2.11) Прочитаем записи (pull-запрос)
 SELECT * FROM titles EMIT CHANGES;
 
-2.12) Во втором терминале дабавляем, изменяем и удаляем записи
+2.12) Во втором терминале дабавляем записи
 INSERT INTO titles (title) values ('Four');
 INSERT INTO titles (title) values ('Five');
 INSERT INTO titles (title) values ('Six');
@@ -204,10 +203,10 @@ SELECT * FROM titles;
 3) ksqlDB + Kafka Connect, Вариант 2
 
 3.1) Во втором терминале создадим таблицу в PostgreSQL и запишем в неё данные
-CREATE TABLE customers (id TEXT PRIMARY KEY, name TEXT, age INT);
-INSERT INTO customers (id, name, age) VALUES ('5', 'Fred', 34);
-INSERT INTO customers (id, name, age) VALUES ('7', 'Sue', 25);
-INSERT INTO customers (id, name, age) VALUES ('2', 'Bill', 51);
+CREATE TABLE customers (id INT PRIMARY KEY, name TEXT, age INT);
+INSERT INTO customers (id, name, age) VALUES (5, 'Fred', 34);
+INSERT INTO customers (id, name, age) VALUES (7, 'Sue', 25);
+INSERT INTO customers (id, name, age) VALUES (2, 'Bill', 51);
 SELECT * FROM customers;
 
 3.2) В первом терминале создаём коннектор customers_source
@@ -245,16 +244,15 @@ PRINT `postgres.public.customers` FROM BEGINNING;
 ^C
 
 3.7) Создаём поток
-CREATE STREAM customers
-WITH (kafka_topic = 'postgres.public.customers', value_format = 'avro');
+CREATE STREAM customers WITH (kafka_topic = 'postgres.public.customers', value_format = 'avro');
 
 3.8) Выведем содержимое потока
 SELECT * FROM customers EMIT CHANGES;
 
 3.9) Во втором терминале дабавляем, изменяем и удаляем записи
-INSERT INTO customers (id, name, age) VALUES ('3', 'Ann', 18);
-UPDATE customers set age = 35 WHERE id = '5';
-DELETE FROM customers WHERE id = '2';
+INSERT INTO customers (id, name, age) VALUES (3, 'Ann', 18);
+UPDATE customers set age = 35 WHERE id = 5;
+DELETE FROM customers WHERE id = 2;
 SELECT * FROM customers;
 \q
 
@@ -270,6 +268,18 @@ CREATE TABLE customers_by_key AS
 
 3.11) Создадим запрос к таблице
 SELECT * FROM customers_by_key;
+
+3.12) Создаём таблицу
+CREATE TABLE customers_by_key_2 AS
+    SELECT id,
+           latest_by_offset(name, true) AS name,
+           latest_by_offset(age, true) AS age
+    FROM customers
+    GROUP BY id
+    EMIT CHANGES;
+
+3.13) Создадим запрос к таблице
+SELECT * FROM customers_by_key_2;
 ^D
 
 
