@@ -2,6 +2,7 @@
 
 Материалы для курса [Apache Kafka](https://otus.ru/lessons/kafka/)
 
+-  **1** [Брокеры сообщений](lesson-01)
 -  **2** [Знакомство с Apache Kafka](lesson-02)
 -  **4** [Установка и настройка кластера](lesson-04)
 -  **5** [Топики](lesson-05)
@@ -14,6 +15,7 @@
 - **11** [Транзакци](lesson-11)
 - **13** [Kafka Streams](lesson-13)
 - **17** [Akka Streams. Alpakka Kafka](lesson-17)
+- **19** [Spring for Apache Kafka](lesson-19)
 - **20** [Spark Streaming](lesson-20)
 - **21** [Kafka Connect](lesson-21)
 - **22** [ksqlDB](lesson-22)
