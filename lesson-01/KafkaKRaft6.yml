@@ -2,10 +2,12 @@ services:
   controller1:
     image: apache/kafka:latest
     container_name: controller1
+    hostname: controller1
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: controller
       KAFKA_LISTENERS: CONTROLLER://:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller1:9093,2@controller2:9093,3@controller3:9093
@@ -14,10 +16,12 @@ services:
   controller2:
     image: apache/kafka:latest
     container_name: controller2
+    hostname: controller2
     environment:
       KAFKA_NODE_ID: 2
       KAFKA_PROCESS_ROLES: controller
       KAFKA_LISTENERS: CONTROLLER://:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller1:9093,2@controller2:9093,3@controller3:9093
@@ -26,25 +30,28 @@ services:
   controller3:
     image: apache/kafka:latest
     container_name: controller3
+    hostname: controller3
     environment:
       KAFKA_NODE_ID: 3
       KAFKA_PROCESS_ROLES: controller
       KAFKA_LISTENERS: CONTROLLER://:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller1:9093,2@controller2:9093,3@controller3:9093
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
-  broker1:
+  kafka1:
     image: apache/kafka:latest
-    container_name: broker1
+    container_name: kafka1
+    hostname: kafka1
     ports:
       - 19092:19092
     environment:
       KAFKA_NODE_ID: 4
       KAFKA_PROCESS_ROLES: broker
       KAFKA_LISTENERS: 'INTERNAL://:9092,EXTERNAL://:19092'
-      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://broker1:9092,EXTERNAL://localhost:19092'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka1:9092,EXTERNAL://localhost:19092'
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
@@ -55,16 +62,17 @@ services:
       - controller2
       - controller3
 
-  broker2:
+  kafka2:
     image: apache/kafka:latest
-    container_name: broker2
+    container_name: kafka2
+    hostname: kafka2
     ports:
       - 29092:29092
     environment:
       KAFKA_NODE_ID: 5
       KAFKA_PROCESS_ROLES: broker
       KAFKA_LISTENERS: 'INTERNAL://:9092,EXTERNAL://:29092'
-      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://broker2:9092,EXTERNAL://localhost:29092'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka2:9092,EXTERNAL://localhost:29092'
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
@@ -75,16 +83,17 @@ services:
       - controller2
       - controller3
 
-  broker3:
+  kafka3:
     image: apache/kafka:latest
-    container_name: broker3
+    container_name: kafka3
+    hostname: kafka3
     ports:
       - 39092:39092
     environment:
       KAFKA_NODE_ID: 6
       KAFKA_PROCESS_ROLES: broker
       KAFKA_LISTENERS: 'INTERNAL://:9092,EXTERNAL://:39092'
-      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://broker3:9092,EXTERNAL://localhost:39092'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka3:9092,EXTERNAL://localhost:39092'
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT

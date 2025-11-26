@@ -2,8 +2,8 @@ services:
   zookeeper:
     image: zookeeper:latest
     restart: always
-    container_name: zoo1
-    hostname: zoo1
+    container_name: zookeeper
+    hostname: zookeeper
     ports:
       - 2181:2181
     environment:
