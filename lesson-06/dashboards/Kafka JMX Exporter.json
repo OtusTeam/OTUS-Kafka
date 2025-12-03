@@ -1,35 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_PROMETHEUS",
-      "label": "Prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__elements": {},
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "10.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph (old)",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -51,7 +20,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 721,
   "graphTooltip": 0,
-  "id": null,
+  "id": 7,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -64,7 +33,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "description": "Total user and system CPU time spent in seconds",
       "editable": true,
@@ -113,7 +82,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "rate(process_cpu_seconds_total{instance=\"$node:$port\",job='$job'}[1m])",
           "format": "time_series",
@@ -165,7 +134,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "description": "Used bytes of a given JVM memory area",
       "editable": true,
@@ -218,20 +187,22 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
-          "expr": "sum without(area)(jvm_memory_bytes_used{instance=\"$node:$port\",job='$job'})",
+          "editorMode": "code",
+          "expr": "sum without(area)(jvm_memory_used_bytes{instance=\"$node:$port\",job='$job'})",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Memory  - Usage",
           "metric": "jvm_memory_bytes_used",
+          "range": true,
           "refId": "A",
           "step": 4
         },
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "sum without(area)(jvm_memory_bytes_max{instance=\"$node:$port\",job='$job'})",
           "format": "time_series",
@@ -283,7 +254,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "description": "Time spent in a given JVM garbage collector in seconds",
       "editable": true,
@@ -332,7 +303,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "sum without(gc)(rate(jvm_gc_collection_seconds_sum{instance=\"$node:$port\",job='$job'}[5m]))",
           "format": "time_series",
@@ -382,7 +353,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "editable": true,
       "error": false,
@@ -430,7 +401,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "sum without(instance)(rate(kafka_server_brokertopicmetrics_messagesin_total{instance=\"$node:$port\",job='$job',topic!=\"\"}[5m]))",
           "format": "time_series",
@@ -480,7 +451,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "editable": true,
       "error": false,
@@ -528,7 +499,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "sum without(instance)(rate(kafka_server_brokertopicmetrics_bytesin_total{instance=\"$node:$port\",job='$job',topic!=\"\"}[5m]))",
           "format": "time_series",
@@ -578,7 +549,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "editable": true,
       "error": false,
@@ -626,7 +597,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "sum without(instance)(rate(kafka_server_brokertopicmetrics_bytesout_total{instance=\"$node:$port\",job='$job',topic!=\"\"}[5m]))",
           "format": "time_series",
@@ -676,7 +647,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "description": "Logs size",
       "editable": true,
@@ -725,7 +696,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "kafka_log_log_size {instance=\"$node:$port\",job='$job',topic!=\"\"} ",
           "format": "time_series",
@@ -776,7 +747,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "description": "Number of requests per second",
       "fill": 0,
@@ -824,7 +795,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "rate(kafka_network_requestmetrics_requests_total{instance=~'$node:$port',job='$job',request=\"FetchConsumer\"}[1m])",
           "format": "time_series",
@@ -835,7 +806,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "rate(kafka_network_requestmetrics_requests_total{instance=~'$node:$port',job='$job',request=\"Fetch\"}[1m])",
           "format": "time_series",
@@ -846,7 +817,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "rate(kafka_network_requestmetrics_requests_total{instance=~'$node:$port',job='$job',request=\"Produce\"}[1m])",
           "format": "time_series",
@@ -892,7 +863,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "description": "The average fraction of time the network processors are idle",
       "fill": 0,
@@ -939,7 +910,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "(kafka_network_socketserver_networkprocessoravgidlepercent{instance=~'$node:$port',job='$job'}) * 100",
           "format": "time_series",
@@ -986,7 +957,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "description": "Time it takes to process a request. ",
       "fill": 0,
@@ -1036,7 +1007,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "editorMode": "code",
           "expr": "rate(kafka_network_requestmetrics_totaltimems{request=~\"Produce|FetchFollower|FetchConsumer\"}[1m])",
@@ -1085,7 +1056,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "description": "Number of partitions on  the system",
       "fill": 0,
@@ -1133,7 +1104,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "kafka_server_replicamanager_partitioncount{instance=~'$node:$port',job='$job'}",
           "format": "time_series",
@@ -1179,7 +1150,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "description": "Number of partitions without an active leader, therefore not readable nor writeable",
       "fill": 0,
@@ -1227,7 +1198,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "kafka_controller_kafkacontroller_offlinepartitionscount{instance=~'$node:$port',job='$job'}",
           "format": "time_series",
@@ -1273,7 +1244,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "description": "Number of disputed leader elections rate",
       "fill": 0,
@@ -1321,7 +1292,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "kafka_controller_controllerstats_leaderelectionrateandtimems{instance=~'$node:$port',job='$job',quantile=\"0.999\"}",
           "format": "time_series",
@@ -1367,7 +1338,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "description": "Number of active controller brokers",
       "fill": 0,
@@ -1415,7 +1386,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "kafka_controller_kafkacontroller_activecontrollercount{instance=~'$node:$port',job='$job'}",
           "format": "time_series",
@@ -1461,7 +1432,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
       },
       "description": "When a broker goes down, ISR will shrink for some of the partitions. When that broker is up again, ISR will be expanded once the replicas have fully caught up.",
       "fill": 0,
@@ -1509,7 +1480,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "rate(kafka_server_replicamanager_isrshrinks_total{instance=~'$node:$port',job='$job'}[1m])",
           "format": "time_series",
@@ -1520,7 +1491,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
           },
           "expr": "rate(kafka_server_replicamanager_isrexpands_total{instance=~'$node:$port',job='$job'}[1m])",
           "format": "time_series",
@@ -1560,7 +1531,7 @@
       }
     }
   ],
-  "refresh": "",
+  "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
   "tags": [
@@ -1569,19 +1540,26 @@
   "templating": {
     "list": [
       {
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "kafka-jmx-exporter",
+          "value": "kafka-jmx-exporter"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
+          "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
         },
-        "definition": "label_values(jvm_info,job)",
+        "definition": "label_values(jvm_runtime_info,job)",
         "hide": 0,
         "includeAll": false,
         "label": "Job",
         "multi": false,
         "name": "job",
         "options": [],
-        "query": "label_values(jvm_info,job)",
+        "query": {
+          "query": "label_values(jvm_runtime_info,job)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1592,19 +1570,26 @@
         "useTags": false
       },
       {
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
+          "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
         },
-        "definition": "label_values(jvm_info{job=~\"$job\"},instance)",
+        "definition": "label_values(jvm_runtime_info{job=~\"$job\"},instance)",
         "hide": 0,
         "includeAll": true,
         "label": "Host",
         "multi": true,
         "name": "node",
         "options": [],
-        "query": "label_values(jvm_info{job=~\"$job\"},instance)",
+        "query": {
+          "query": "label_values(jvm_runtime_info{job=~\"$job\"},instance)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
         "refresh": 1,
         "regex": "/([^:]+):.*/",
         "skipUrlSync": false,
@@ -1615,19 +1600,26 @@
         "useTags": false
       },
       {
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "7071",
+          "value": "7071"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
+          "uid": "d93c6a54-73c6-410a-ac7e-e3f07614f166"
         },
-        "definition": "label_values(jvm_info{job=~\"$job\"},instance)",
+        "definition": "label_values(jvm_runtime_info{job=~\"$job\"},instance)",
         "hide": 0,
         "includeAll": false,
         "label": "Port",
         "multi": false,
         "name": "port",
         "options": [],
-        "query": "label_values(jvm_info{job=~\"$job\"},instance)",
+        "query": {
+          "query": "label_values(jvm_runtime_info{job=~\"$job\"},instance)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
         "refresh": 1,
         "regex": "/[^:]+:(.*)/",
         "skipUrlSync": false,
@@ -1671,6 +1663,6 @@
   "timezone": "browser",
   "title": "Kafka JMX Exporter",
   "uid": "znMPWBxZk",
-  "version": 3,
+  "version": 6,
   "weekStart": ""
 }
