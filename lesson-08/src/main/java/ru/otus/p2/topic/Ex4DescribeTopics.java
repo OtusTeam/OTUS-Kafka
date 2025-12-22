@@ -15,7 +15,8 @@ public class Ex4DescribeTopics {
                     "ex3-topic-2",
                     "ex3-topic-3"
             ), new DescribeTopicsOptions().includeAuthorizedOperations(true))
-                    .allTopicNames().get();
+                    .allTopicNames()
+                    .get();
 
             result.forEach((name, description) -> Utils.log.info("{}: {}", name, description));
 

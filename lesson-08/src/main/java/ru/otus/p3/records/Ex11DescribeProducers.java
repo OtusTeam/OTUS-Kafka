@@ -1,14 +1,11 @@
 package ru.otus.p3.records;
 
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
-import ru.otus.MessageReceiverGroup;
 import ru.otus.RemoveAll;
 import ru.otus.Utils;
 
 import java.util.List;
-import java.util.Map;
 
 public class Ex11DescribeProducers {
 
@@ -21,7 +18,9 @@ public class Ex11DescribeProducers {
             Utils.sendMessages(0, 20, "ex11", null);
             Utils.sendMessages(20, 40, "ex11", null);
 
-            var info = client.describeProducers(List.of(new TopicPartition("ex11", 0))).all().get();
+            var info = client.describeProducers(List.of(new TopicPartition("ex11", 0)))
+                    .all()
+                    .get();
 
             Utils.log.info("Info\n{}", info);
         });

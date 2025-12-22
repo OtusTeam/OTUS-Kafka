@@ -2,13 +2,11 @@ package ru.otus.p2.topic;
 
 import org.apache.kafka.clients.admin.NewPartitions;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.common.config.TopicConfig;
 import ru.otus.RemoveAll;
 import ru.otus.Utils;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class Ex6CreatePartitions {
 
