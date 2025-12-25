@@ -54,4 +54,3 @@ services:
     volumes:
       - ./security:/opt/security
       - ./config/kafka/log4j.properties.template:/etc/confluent/docker/log4j.properties.template
-      - ./logs:/var/log/kafka/
