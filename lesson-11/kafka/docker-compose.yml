@@ -1,4 +1,3 @@
-version: '2.4'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.0.9
@@ -66,13 +65,13 @@ services:
 #      - "9092:9092"
 
   kafdrop:
-    image: obsidiandynamics/kafdrop
+    image: obsidiandynamics/kafdrop:4.1.0
     container_name: kafdrop-otuskafka
-    restart: "no"
+    restart: "always"
     ports:
       - "9000:9000"
     environment:
       KAFKA_BROKERCONNECT: "kafka1:9191"
-      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+      JVM_OPTS: "-Xms32M -Xmx128M"
     depends_on:
       - "kafka1"
