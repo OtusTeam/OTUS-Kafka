@@ -1,8 +1,6 @@
 package ru.otus.p1.create.topic;
 
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import ru.otus.Utils;
 
 import java.util.List;

@@ -19,7 +19,7 @@ services:
   kafka0:
     image: confluentinc/cp-kafka:7.0.9 #confluentinc/cp-server:5.5.1
     ports:
-      - '9091:9091'
+      - '19092:19092'
     depends_on:
       - zookeeper
     environment:
@@ -27,8 +27,8 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_INTER_BROKER_LISTENER_NAME: REPLICATION
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
-      KAFKA_LISTENERS: "EXTERNAL://0.0.0.0:9091,INTERNAL://0.0.0.0:9093,REPLICATION://0.0.0.0:9094"
-      KAFKA_ADVERTISED_LISTENERS: "EXTERNAL://localhost:9091,INTERNAL://kafka0:9093,REPLICATION://kafka0:9094"
+      KAFKA_LISTENERS: "EXTERNAL://0.0.0.0:19092,INTERNAL://0.0.0.0:9093,REPLICATION://0.0.0.0:9094"
+      KAFKA_ADVERTISED_LISTENERS: "EXTERNAL://localhost:19092,INTERNAL://kafka0:9093,REPLICATION://kafka0:9094"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "EXTERNAL:SASL_PLAINTEXT,INTERNAL:SASL_PLAINTEXT,REPLICATION:SASL_PLAINTEXT"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -54,4 +54,3 @@ services:
     volumes:
       - ./security:/opt/security
       - ./config/kafka/log4j.properties.template:/etc/confluent/docker/log4j.properties.template
-      - ./logs:/var/log/kafka/

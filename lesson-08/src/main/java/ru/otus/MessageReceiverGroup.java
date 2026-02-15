@@ -16,9 +16,9 @@ public class MessageReceiverGroup implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         for (var r: receivers) {
-            r.close();
+            r.closeConsumer = true;
         }
     }
 }

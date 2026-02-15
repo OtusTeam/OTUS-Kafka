@@ -45,6 +45,16 @@ Content-Type: application/vnd.kafka.v2+json
 ###
 GET http://localhost:8082/consumers/my_json_consumer_group2/instances/my_consumer/offsets
 Accept: application/vnd.kafka.json.v2+json
+Content-Type: application/vnd.kafka.v2+json
+
+{
+  "partitions": [
+    {
+      "topic": "jsontest",
+      "partition": 0
+    }
+  ]
+}
 
 ### Получить данные
 

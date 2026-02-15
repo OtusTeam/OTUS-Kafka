@@ -7,8 +7,7 @@ import org.apache.kafka.clients.admin.TopicListing;
 import org.apache.kafka.common.errors.TopicExistsException;
 import reactor.core.publisher.Mono;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -17,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 public class RemoveAll {
 
     // Просто, переходим к синхронному коду
-    private static Collection<String> sync(Admin client) throws Exception {
+    public static void removeAll(Admin client) throws Exception {
         var topics = client.listTopics()
                 .listings()
                 .get() // вот тот самый переход
@@ -31,29 +30,10 @@ public class RemoveAll {
                 .get(); // а вот еще раз
 
         Utils.log.info("SUCCESS");
-
-        return topics;
-    }
-
-    // Попытка сделать асинхронно на KafkaFuture (неудачная)
-    private static void async1(Admin client) throws Exception {
-        client.listTopics()
-                .listings()
-                .thenApply(listings -> listings.stream()
-                        .filter(it -> !it.isInternal())
-                        .map(TopicListing::name)
-                        .toList())
-                .thenApply(topics -> {
-                    Utils.log.info("External topics: {}", topics);
-                    return client.deleteTopics(topics).all();
-                })
-                // см тип результата :(
-                .get()
-                .get();
     }
 
     // Сложнее, асинхронный код на CompletionStage
-    private static void async2(Admin client) throws Exception {
+    public static void removeAllInChain(Admin client) throws Exception {
         client.listTopics()
                 .listings()
                 .toCompletionStage()
@@ -72,10 +52,10 @@ public class RemoveAll {
                         Utils.log.error("Troubles...", ex);
                 })
                 .toCompletableFuture()
-                .get();
+                .join();
     }
 
-    private static void async3(Admin client) throws Exception {
+    public static void removeAllWithMono(Admin client) throws Exception {
         Mono.fromCompletionStage(client.listTopics()
                         .listings()
                         .toCompletionStage())
@@ -93,29 +73,31 @@ public class RemoveAll {
     }
 
     public static void main(String[] args) {
-        Utils.doAdminAction(client -> {
-            sync(client);
-            // async1(client);
-            // async2(client);
-            // async3(client);
-        });
+        Utils.doAdminAction(RemoveAll::removeAll);
+        Utils.doAdminAction(RemoveAll::removeAllInChain);
+        Utils.doAdminAction(RemoveAll::removeAllWithMono);
     }
 
-    public static void removeAll(Admin client) throws Exception {
-        var topics = sync(client);
+    public static void checkRemoval(Admin client, Set<String> topics) throws InterruptedException {
+        if (topics.isEmpty()) {
+            return;
+        }
 
-        // не нашел лучшего варианта. После удаления на сомом деле топики еще не удалены и создать их нельзя
-        var newTopics = topics.stream().map(t -> new NewTopic(t, 1, (short) 1)).toList();var options = new CreateTopicsOptions().validateOnly(true);
+        // не нашел лучшего варианта. После удаления на самом деле топики еще не удалены и создать их нельзя
+        // https://kafka.apache.org/26/javadoc/org/apache/kafka/clients/admin/KafkaAdminClient.html#deleteTopics-java.util.Collection-org.apache.kafka.clients.admin.DeleteTopicsOptions-
+        var newTopics = topics.stream().map(t -> new NewTopic(t, 1, (short) 1)).toList();
+        var options = new CreateTopicsOptions().validateOnly(true);
 
-        while (true) {
+        boolean doesExist = true;
+        while (doesExist) {
             try {
                 client.createTopics(newTopics, options).all().get();
-                break;
-            } catch (ExecutionException ex) {
-                if (ex.getCause() == null || ex.getCause().getClass() != TopicExistsException.class)
-                    throw ex;
+                doesExist = false;
+            } catch (Exception ex) {
                 Thread.sleep(100);
+                Utils.log.error("exception: {}", ex.getMessage());
             }
         }
+        Utils.log.info("topics {} doesn't exist", topics);
     }
 }

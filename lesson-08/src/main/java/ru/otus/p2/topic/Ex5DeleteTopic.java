@@ -1,13 +1,11 @@
 package ru.otus.p2.topic;
 
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.common.config.TopicConfig;
 import ru.otus.RemoveAll;
 import ru.otus.Utils;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Ex5DeleteTopic {
 
@@ -15,13 +13,23 @@ public class Ex5DeleteTopic {
         Utils.doAdminAction(client -> {
             RemoveAll.removeAll(client);
 
-            client.createTopics(List.of(new NewTopic("ex5", 1, (short)1)))
+            List<NewTopic> topics = List.of(new NewTopic("ex5", 1, (short) 1));
+            var topicNames = topics.stream()
+                    .map(NewTopic::name)
+                    .collect(Collectors.toSet());
+
+            RemoveAll.checkRemoval(client, topicNames);
+            client.createTopics(topics)
                     .all().get();
 
-            client.deleteTopics(List.of("ex5")).all().get();
+            client.deleteTopics(topicNames).all()
+                    .get();
 
-            client.createTopics(List.of(new NewTopic("ex5", 1, (short)1)))
+            RemoveAll.checkRemoval(client, topicNames);
+
+            client.createTopics(topics)
                     .all().get();
+            Utils.log.info("Ex5DeleteTopic topic recreated");
         });
     }
 }
