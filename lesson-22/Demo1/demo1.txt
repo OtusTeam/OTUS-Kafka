@@ -26,10 +26,10 @@ DESCRIBE userstream;
 DESCRIBE userstream EXTENDED;
 
 9) Добавим записи в поток
-INSERT INTO userstream (username) VALUES ('Alex');
-INSERT INTO userstream (username) VALUES ('Barbara');
-INSERT INTO userstream (username) VALUES ('Carl');
-INSERT INTO userstream (username) VALUES ('Fiona');
+INSERT INTO userstream VALUES (1, 'Alex');
+INSERT INTO userstream VALUES (2, 'Barbara');
+INSERT INTO userstream VALUES (3, 'Carl');
+INSERT INTO userstream VALUES (4, 'Fiona');
 
 10) Прочитаем записи (pull-запрос)
 SELECT * FROM userstream;
@@ -40,9 +40,9 @@ SELECT 'Hello, ' + USERNAME AS GREETING FROM userstream EMIT CHANGES;
 12) Открываем второй терминал, добавляем записи в поток
 docker exec -ti ksqldb-cli ksql http://ksqldb-server:8088
 SET 'auto.offset.reset' = 'earliest';
-INSERT INTO userstream (username) VALUES ('Mary');
-INSERT INTO userstream (username) VALUES ('Garry');
-INSERT INTO userstream (username) VALUES ('Ann');
+INSERT INTO userstream VALUES (5, 'Mary');
+INSERT INTO userstream VALUES (6, 'Garry');
+INSERT INTO userstream VALUES (7, 'Ann');
 
 13) В первом терминале посмотрим на метаданные
 ^C

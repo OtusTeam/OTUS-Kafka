@@ -17,6 +17,7 @@ docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19
 
 6) Создадим таблицу в PostgreSQL и запишем в неё данные
 docker exec -ti postgres psql -U postgres
+\dt
 CREATE TABLE titles (id SERIAL PRIMARY KEY, title VARCHAR(120));
 INSERT INTO titles (title) values ('Stranger Things');
 INSERT INTO titles (title) values ('Black Mirror');
@@ -55,6 +56,7 @@ PRINT `postgres.titles` FROM BEGINNING;
 
 14) Удаляем коннектор
 DROP CONNECTOR `postgres-source`;
+^D
 
 15) Завершаем работу
 docker compose stop

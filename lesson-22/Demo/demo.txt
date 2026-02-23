@@ -28,8 +28,7 @@ SET 'auto.offset.reset' = 'earliest';
 SHOW TOPICS;
 
 1.5) Создаём поток, который читает топик users
-CREATE STREAM usersStream (ROWKEY INT KEY, USERNAME VARCHAR)
-WITH (KAFKA_TOPIC='users', VALUE_FORMAT='JSON', PARTITIONS=3);
+CREATE STREAM usersStream (ROWKEY INT KEY, USERNAME VARCHAR) WITH (KAFKA_TOPIC='users', VALUE_FORMAT='JSON', PARTITIONS=3);
 
 1.6) Работа с потоками
 SHOW STREAMS;
@@ -77,14 +76,10 @@ DESCRIBE FUNCTION UUID;
 ## Непрерывные запросы
 
 1.16) В первом терминале создаём первый поток
-CREATE STREAM PurchaseStream (id INT KEY, product VARCHAR, left_ts VARCHAR)
-WITH (KAFKA_TOPIC='PurchaseTopic', VALUE_FORMAT='JSON',
-      TIMESTAMP='left_ts', TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX', PARTITIONS=3);
+CREATE STREAM PurchaseStream (id INT KEY, product VARCHAR, left_ts VARCHAR) WITH (KAFKA_TOPIC='PurchaseTopic', VALUE_FORMAT='JSON', TIMESTAMP='left_ts', TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX', PARTITIONS=3);
 
 1.17) Создаём второй поток
-CREATE STREAM PaymentStream (id INT KEY, purchaseId INT, status VARCHAR, right_ts VARCHAR)
-WITH (KAFKA_TOPIC='PaymentTopic', VALUE_FORMAT='JSON',
-      TIMESTAMP='right_ts', TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX', PARTITIONS=3);
+CREATE STREAM PaymentStream (id INT KEY, purchaseId INT, status VARCHAR, right_ts VARCHAR) WITH (KAFKA_TOPIC='PaymentTopic', VALUE_FORMAT='JSON', TIMESTAMP='right_ts', TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX', PARTITIONS=3);
 
 1.18) Создаём CSAS - Create Stream As Select
 CREATE STREAM PaymentPurchaseStream
@@ -114,9 +109,7 @@ SELECT * FROM PaymentPurchaseStream;
 ## Агрегирование
 
 1.22) Создаём поток
-CREATE STREAM OrderStream (ID INT KEY, status VARCHAR, ts VARCHAR)
-WITH (KAFKA_TOPIC='OrderTopic', VALUE_FORMAT='JSON',
-      TIMESTAMP='ts', TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX', PARTITIONS=3);
+CREATE STREAM OrderStream (ID INT KEY, status VARCHAR, ts VARCHAR) WITH (KAFKA_TOPIC='OrderTopic', VALUE_FORMAT='JSON', TIMESTAMP='ts', TIMESTAMP_FORMAT='yyyy-MM-dd''T''HH:mm:ssX', PARTITIONS=3);
 
 1.23) Создаём CTAS - Create Table As Select
 CREATE TABLE OrderTable AS
@@ -187,7 +180,7 @@ CREATE STREAM titles WITH (kafka_topic = 'postgres.titles', value_format = 'avro
 2.10) Выведем описание потока
 DESCRIBE titles EXTENDED;
 
-2.11) Прочитаем записи (pull-запрос)
+2.11) Прочитаем записи (push-запрос)
 SELECT * FROM titles EMIT CHANGES;
 
 2.12) Во втором терминале дабавляем записи

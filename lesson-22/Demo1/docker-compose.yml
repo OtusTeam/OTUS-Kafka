@@ -1,52 +1,46 @@
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    container_name: zookeeper
-    hostname: zookeeper
-    ports:
-      - "2181:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-
   broker:
-    image: confluentinc/cp-kafka:7.2.15
+    image: confluentinc/cp-kafka:8.0.3
     container_name: broker
     hostname: broker
-    depends_on:
-      - zookeeper
     ports:
-      - "29092:29092"
+      - 19092:19092
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker:9092,LOCAL://localhost:19092,CONTROLLER://:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,LOCAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:9093
+      KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
+      KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   ksqldb-server:
-    image: confluentinc/ksqldb-server:0.29.0
+    image: confluentinc/cp-ksqldb-server:8.0.3
     container_name: ksqldb-server
     hostname: ksqldb-server
     depends_on:
       - broker
     ports:
-      - "8088:8088"
+      - 8088:8088
     environment:
       KSQL_LISTENERS: http://0.0.0.0:8088
-      KSQL_BOOTSTRAP_SERVERS: broker:9092
+      KSQL_BOOTSTRAP_SERVERS: "broker:9092"
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
 
   ksqldb-cli:
-    image: confluentinc/ksqldb-cli:0.29.0
+    image: confluentinc/cp-ksqldb-cli:8.0.3
     container_name: ksqldb-cli
+    hostname: ksqldb-cli
     depends_on:
       - broker
       - ksqldb-server
     entrypoint: /bin/sh
     tty: true
-  
+

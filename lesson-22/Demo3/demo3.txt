@@ -17,10 +17,11 @@ docker exec kafka1 kafka-topics --list --bootstrap-server kafka1:19092,kafka2:19
 
 6) Создадим таблицу в PostgreSQL и запишем в неё данные
 docker exec -ti postgres psql -U postgres
-CREATE TABLE customers (id TEXT PRIMARY KEY, name TEXT, age INT);
-INSERT INTO customers (id, name, age) VALUES ('5', 'Fred', 34);
-INSERT INTO customers (id, name, age) VALUES ('7', 'Sue', 25);
-INSERT INTO customers (id, name, age) VALUES ('2', 'Bill', 51);
+\dt
+CREATE TABLE customers (id INT PRIMARY KEY, name TEXT, age INT);
+INSERT INTO customers (id, name, age) VALUES (5, 'Fred', 34);
+INSERT INTO customers (id, name, age) VALUES (7, 'Sue', 25);
+INSERT INTO customers (id, name, age) VALUES (2, 'Bill', 51);
 SELECT * FROM customers;
 \q
 
@@ -88,17 +89,8 @@ CREATE TABLE customers_by_key AS
 18) Создадим запрос к таблице
 SELECT * FROM customers_by_key;
 
-19) Удаляем коннектор
-DROP CONNECTOR `customers_source`;
-^D
-
-20) Завершаем работу
-docker compose stop
-docker container prune -f
-docker volume prune -f
-
-
-CREATE TABLE customers_by_key_5 AS
+19) Создаём ещё одну таблицу
+CREATE TABLE customers_by_key_2 AS
     SELECT id,
            latest_by_offset(name) AS name,
            latest_by_offset(age) AS age
@@ -107,3 +99,15 @@ CREATE TABLE customers_by_key_5 AS
     HAVING latest_by_offset(__DELETED) = 'false'
     EMIT CHANGES;
 
+20) Создадим запрос к таблице
+SELECT * FROM customers_by_key_2;
+
+
+21) Удаляем коннектор
+DROP CONNECTOR `customers_source`;
+^D
+
+22) Завершаем работу
+docker compose stop
+docker container prune -f
+docker volume prune -f
