@@ -1,0 +1,8 @@
+plugins {
+    alias(libs.plugins.avro)
+}
+
+dependencies {
+    implementation libs.avro
+}
+

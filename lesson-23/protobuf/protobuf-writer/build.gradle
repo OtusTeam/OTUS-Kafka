@@ -1,0 +1,14 @@
+plugins {
+    alias(libs.plugins.protobuf)
+}
+
+dependencies {
+    implementation libs.protobuf.java
+    implementation libs.protobuf.java.util
+}
+
+protobuf {
+    protoc {
+        artifact = libs.protoc.get()
+    }
+}

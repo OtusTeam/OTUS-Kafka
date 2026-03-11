@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package ru.otus;
+
+message Person {
+  string name = 1;
+  optional int32 favoriteNumber = 2;
+  optional string favoriteColor = 3;
+  optional string email = 4;
+}
+
+message Persons {
+  repeated Person person = 1;
+}

@@ -1,0 +1,27 @@
+plugins {
+    alias(libs.plugins.avro) apply false
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    group = 'ru.otus.kafka'
+    version = '1.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://packages.confluent.io/maven/"
+        }
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.toVersion(libs.versions.java.get())
+        targetCompatibility = JavaVersion.toVersion(libs.versions.java.get())
+    }
+
+    dependencies {
+        implementation libs.slf4j.api
+        implementation libs.logback.classic
+    }
+}

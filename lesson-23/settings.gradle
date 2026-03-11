@@ -1,0 +1,19 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'kafka-avro-parent'
+
+include 'avro:avro-reader'
+include 'avro:avro-writer'
+include 'avro:consumer'
+include 'avro:producer'
+
+include 'protobuf:protobuf-reader'
+include 'protobuf:protobuf-writer'
+include 'protobuf:protobuf-consumer'
+include 'protobuf:protobuf-producer'
+

@@ -1,0 +1,24 @@
+[versions]
+java = "21"
+
+avro = "1.12.1"
+kafka = "3.4.0"
+slf4j = "2.0.7"
+logback = "1.4.12"
+protobuf = "4.33.4"
+
+[libraries]
+avro = { group = "org.apache.avro", name = "avro", version.ref = "avro" }
+kafka-clients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "kafka" }
+kafka-avro-serializer = { group = "io.confluent", name = "kafka-avro-serializer", version = "7.5.1" }
+kafka-protobuf-serializer = "io.confluent:kafka-protobuf-serializer:8.2.0"
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
+protobuf-java = {group = "com.google.protobuf", name = "protobuf-java", version.ref = "protobuf" }
+protobuf-java-util = {group = "com.google.protobuf", name = "protobuf-java-util", version.ref = "protobuf" }
+protoc = { group = "com.google.protobuf", name = "protoc", version.ref = "protobuf" }
+
+
+[plugins]
+avro = { id = "eu.eventloopsoftware.avro-gradle-plugin", version = "0.1.1" }
+protobuf = "com.google.protobuf:0.9.4"
