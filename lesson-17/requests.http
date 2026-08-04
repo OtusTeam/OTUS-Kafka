@@ -1,0 +1,53 @@
+@orderId=5a7a6800-ebed-4a94-8a1b-621769359421
+
+### Successful order
+POST http://localhost:8010/orders
+Content-Type: application/json
+
+{
+  "customerId": "customer-1",
+  "currency": "RUB",
+  "lines": [
+    { "sku": "BOOK-EDA", "quantity": 1, "price": 1500 },
+    { "sku": "COURSE-KAFKA", "quantity": 1, "price": 2500 }
+  ]
+}
+
+### Payment business rejection
+POST http://localhost:8010/orders
+Content-Type: application/json
+
+{
+  "customerId": "customer-2",
+  "currency": "RUB",
+  "lines": [
+    { "sku": "EXPENSIVE-ITEM", "quantity": 1, "price": 9000 }
+  ]
+}
+
+### Inventory business rejection
+POST http://localhost:8010/orders
+Content-Type: application/json
+
+{
+  "customerId": "customer-3",
+  "currency": "RUB",
+  "lines": [
+    { "sku": "OUT-OF-STOCK", "quantity": 1, "price": 1200 }
+  ]
+}
+
+### Technical failure -> retries -> DLT
+POST http://localhost:8010/orders
+Content-Type: application/json
+
+{
+  "customerId": "fail-payment",
+  "currency": "RUB",
+  "lines": [
+    { "sku": "BOOK-EDA", "quantity": 1, "price": 1500 }
+  ]
+}
+
+### Audit projection by order id
+GET http://localhost:8060/audit/orders/{{orderId}}

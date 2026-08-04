@@ -1,0 +1,106 @@
+spring:
+  application:
+    name: lesson-17
+  kafka:
+    bootstrap-servers: localhost:9091,localhost:9092
+    admin:
+      auto-create: true
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      transaction-id-prefix: ${app.instance-name:lesson-17}-${random.uuid}-
+      properties:
+        enable.idempotence: true
+        acks: all
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "ru.otus.lesson-17.events,ru.otus.lesson-17.orders"
+        isolation.level: read_committed
+    listener:
+      ack-mode: record
+    streams:
+      application-id: lesson-17-router
+      properties:
+        processing.guarantee: exactly_once_v2
+        commit.interval.ms: 500
+
+server:
+  port: 8080
+
+app:
+  instance-name: lesson-17
+  payment:
+    reject-amount-threshold: 5000
+
+---
+spring:
+  config:
+    activate:
+      on-profile: orders
+server:
+  port: 8010
+app:
+  instance-name: orders
+
+---
+spring:
+  config:
+    activate:
+      on-profile: payments
+server:
+  port: 8020
+app:
+  instance-name: payments
+
+---
+spring:
+  config:
+    activate:
+      on-profile: inventory
+server:
+  port: 8030
+app:
+  instance-name: inventory
+
+---
+spring:
+  config:
+    activate:
+      on-profile: saga
+server:
+  port: 8040
+app:
+  instance-name: saga
+
+---
+spring:
+  config:
+    activate:
+      on-profile: notifications
+server:
+  port: 8050
+app:
+  instance-name: notifications
+
+---
+spring:
+  config:
+    activate:
+      on-profile: audit
+server:
+  port: 8060
+app:
+  instance-name: audit
+
+---
+spring:
+  config:
+    activate:
+      on-profile: streams
+server:
+  port: 8070
+app:
+  instance-name: streams
